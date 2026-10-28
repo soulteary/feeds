@@ -31,6 +31,15 @@ an explicit zero duration clears the previous value; missing, null, and negative
 durations preserve it. Empty feeds always serialize the required `items: []`
 array without changing the source feed.
 
+RSS conversion uses `Author.Email` for both channel `managingEditor` and item
+`author`, adding `Author.Name` as `email (name)` when present. A missing or
+syntactically invalid single email address causes that optional RSS field to be
+omitted; it does not prevent feed generation. Display-name mailbox syntax in
+`Email` is accepted and normalized, with an explicit `Name` taking precedence.
+Item authors do not inherit the channel author. Name-only authors remain
+available in Atom and JSON, and callers using `RssFeed` / `RssItem` directly
+retain control over their raw contact strings.
+
 ```go
 package main
 
