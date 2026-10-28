@@ -22,6 +22,12 @@
 
 ### gocyclo
 
+- `itunes_test.go`
+  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
+- `xml_base_test.go`
+  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
+- `image_mapping_test.go`
+  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
 - `roundtrip_fixes_test.go`
   - Line 47: cyclomatic complexity 22 for function TestRSSContentAndSourceRoundtrip
   - Line 132: cyclomatic complexity 20 for function TestNilItemsAreSkippedWithoutMutation
@@ -42,23 +48,17 @@
   - Line 58: cyclomatic complexity 43 for function TestRSSToFeed
   - Line 11: cyclomatic complexity 38 for function TestAtomToFeed
   - Line 164: cyclomatic complexity 17 for function TestConversionTextAndTimeSemantics
-- `xml_base_test.go`
-  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
-- `image_mapping_test.go`
-  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
+- `language_test.go`
+  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
 - `links_test.go`
   - Line 13: cyclomatic complexity 26 for function TestFeedMultipleLinksByFormat
   - Line 128: cyclomatic complexity 21 for function TestAtomMultipleLinkRoundtrip
+- `categories_test.go`
+  - Line 12: cyclomatic complexity 23 for function TestGenericCategoryMappings
 - `review_namespace_test.go`
   - Line 10: cyclomatic complexity 18 for function TestRSSContentPrefixBinding
 - `extensions_test.go`
   - Line 22: cyclomatic complexity 18 for function TestExtensionsGenericMappings
-- `language_test.go`
-  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
-- `itunes_test.go`
-  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
-- `categories_test.go`
-  - Line 12: cyclomatic complexity 23 for function TestGenericCategoryMappings
 
 ---
 
