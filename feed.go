@@ -26,6 +26,7 @@ type Enclosure struct {
 }
 
 type Item struct {
+	XMLBase     string      `json:"-"` // Optional XML base URI for the entry/item.
 	ITunes      *ITunesItem `json:"-"` // Optional RSS-only podcast episode metadata.
 	Title       string
 	Link        *Link
@@ -46,6 +47,7 @@ type Item struct {
 }
 
 type Feed struct {
+	XMLBase     string      `json:"-"` // Optional XML base URI for the feed/channel.
 	ITunes      *ITunesFeed `json:"-"` // Optional RSS-only podcast show metadata.
 	Title       string
 	Link        *Link
