@@ -1,13 +1,11 @@
 package feeds
 
 import (
+	"encoding/json"
 	"encoding/xml"
-	"io"
 	"os"
 	"reflect"
 	"testing"
-
-	"github.com/kr/pretty"
 )
 
 var testRssFeedXML = RssFeedXml{
@@ -369,37 +367,45 @@ var testAtomFeedXML = AtomFeed{
 
 func TestRssUnmarshal(t *testing.T) {
 	var xmlFeed RssFeedXml
-	xmlFile, err := os.Open("test.rss")
+	data, err := os.ReadFile("test.rss")
 	if err != nil {
-		panic("AHH file bad")
+		t.Fatalf("read RSS fixture: %v", err)
 	}
-	bytes, _ := io.ReadAll(xmlFile)
-	if err := xml.Unmarshal(bytes, &xmlFeed); err != nil {
-		panic(err)
+	if err := xml.Unmarshal(data, &xmlFeed); err != nil {
+		t.Fatalf("unmarshal RSS fixture: %v", err)
 	}
 
 	if !reflect.DeepEqual(testRssFeedXML, xmlFeed) {
-		diffs := pretty.Diff(testRssFeedXML, xmlFeed)
-		t.Log(pretty.Println(diffs))
-		t.Error("object was not unmarshalled correctly")
+		t.Errorf("RSS object was not unmarshalled correctly\nwant:\n%s\ngot:\n%s",
+			formatFeedForTest(t, testRssFeedXML), formatFeedForTest(t, xmlFeed))
 	}
 
 }
 
 func TestAtomUnmarshal(t *testing.T) {
 	var xmlFeed AtomFeed
-	xmlFile, err := os.Open("test.atom")
+	data, err := os.ReadFile("test.atom")
 	if err != nil {
-		panic("AHH file bad")
+		t.Fatalf("read Atom fixture: %v", err)
 	}
-	bytes, _ := io.ReadAll(xmlFile)
-	if err := xml.Unmarshal(bytes, &xmlFeed); err != nil {
-		panic(err)
+	if err := xml.Unmarshal(data, &xmlFeed); err != nil {
+		t.Fatalf("unmarshal Atom fixture: %v", err)
 	}
 
 	if !reflect.DeepEqual(testAtomFeedXML, xmlFeed) {
-		diffs := pretty.Diff(testAtomFeedXML, xmlFeed)
-		t.Log(pretty.Println(diffs))
-		t.Error("object was not unmarshalled correctly")
+		t.Errorf("Atom object was not unmarshalled correctly\nwant:\n%s\ngot:\n%s",
+			formatFeedForTest(t, testAtomFeedXML), formatFeedForTest(t, xmlFeed))
 	}
+}
+
+// Indented JSON expands nested pointers and retains field names, zero values,
+// and null versus empty slices. DeepEqual remains the equality check; XML
+// formatting would hide differences in fields marked omitempty.
+func formatFeedForTest(t *testing.T, feed interface{}) string {
+	t.Helper()
+	data, err := json.MarshalIndent(feed, "", "  ")
+	if err != nil {
+		t.Fatalf("format feed of type %T for comparison: %v", feed, err)
+	}
+	return string(data)
 }
