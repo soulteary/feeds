@@ -316,6 +316,26 @@ output. Unset bases keep existing XML output unchanged, with no new dependencies
 or existing-field type changes. As with other additive fields, positional struct
 literals for affected types may need updating.
 
+### Feed images
+
+The existing `Feed.Image` maps its `Url` to Atom `logo` and JSON Feed `icon`.
+Nil images or empty URLs omit those optional fields. RSS retains its existing
+image URL, title, link, width, and height mapping. Metadata other than the URL is
+not mapped to Atom/JSON because their feed image fields contain only a reference.
+
+The generic image does not also populate Atom `icon` or JSON `favicon`; these
+small-image roles may require a different resource. Set low-level `AtomFeed.Icon`
+and `JSONFeed.Favicon` independently when needed. Existing low-level logo/icon
+values remain caller-controlled. Feed images are not inherited by items, and the
+existing JSON item image mapping from an image enclosure is unchanged.
+
+Image URL references are passed through exactly with XML/JSON escaping. No URL
+resolution, file access, downloading, resizing, dimension-based selection, or
+image validation is performed. Callers provide suitable assets for each format;
+relative XML references can use the existing `XMLBase` context. The `Image` type
+and all existing fields remain unchanged. Feeds without images retain their
+previous output, and no dependency is added.
+
 ### Complete example
 
 ```go
