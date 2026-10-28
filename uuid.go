@@ -5,6 +5,7 @@ package feeds
 import (
 	"crypto/rand"
 	"fmt"
+	"io"
 )
 
 // UUID is a 16-byte identifier. NewUUID generates random version 4 values.
@@ -12,9 +13,11 @@ type UUID [16]byte
 
 // NewUUID returns a random version 4 UUID using crypto/rand.
 // It panics if the random source fails.
-func NewUUID() *UUID {
+func NewUUID() *UUID { return newUUID(rand.Reader) }
+
+func newUUID(reader io.Reader) *UUID {
 	u := &UUID{}
-	_, err := rand.Read(u[:16])
+	_, err := io.ReadFull(reader, u[:16])
 	if err != nil {
 		panic(err)
 	}

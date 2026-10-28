@@ -76,38 +76,7 @@ func (x Extension) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
 		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: ""})
 	}
 	var inner bytes.Buffer
-	compact := xml.NewEncoder(&inner)
-	for _, part := range x.Content {
-		n := 0
-		if part.Text != "" {
-			n++
-		}
-		if part.Element != nil {
-			n++
-		}
-		if part.Comment != "" {
-			n++
-		}
-		if n > 1 {
-			return fmt.Errorf("feeds: extension content must contain only one of text, element, or comment")
-		}
-		var err error
-		switch {
-		case part.Element != nil:
-			err = compact.Encode(*part.Element)
-		case part.Comment != "":
-			if strings.Contains(part.Comment, "--") || strings.HasSuffix(part.Comment, "-") {
-				return fmt.Errorf("feeds: invalid XML extension comment")
-			}
-			err = compact.EncodeToken(xml.Comment(part.Comment))
-		default:
-			err = compact.EncodeToken(xml.CharData(part.Text))
-		}
-		if err != nil {
-			return err
-		}
-	}
-	if err := compact.Flush(); err != nil {
+	if err := encodeExtensionContent(&inner, x.Content); err != nil {
 		return err
 	}
 	// Only encoder-generated, escaped XML enters innerxml. Keeping the payload
@@ -177,6 +146,7 @@ type extensionTokenReader struct {
 	depth      int
 	native     string
 	rss        bool
+	content    bool
 	extensions []Extension
 	done       bool
 }
@@ -199,7 +169,7 @@ func (r *extensionTokenReader) Token() (xml.Token, error) {
 		switch t := token.(type) {
 		case xml.StartElement:
 			foreign := t.Name.Space != "" && t.Name.Space != r.native
-			if r.rss && t.Name.Space == ns && t.Name.Local == "link" {
+			if r.rss && ((t.Name.Space == ns && t.Name.Local == "link") || (r.content && t.Name.Space == rssContentNamespace && t.Name.Local == "encoded")) {
 				foreign = false
 			}
 			if r.depth == 1 && foreign {
@@ -224,10 +194,46 @@ func (r *extensionTokenReader) Token() (xml.Token, error) {
 // Decode foreign children before the legacy decoder can confuse a foreign
 // element named title/link/category with an existing unqualified field.
 func decodeExtensions(d *xml.Decoder, start xml.StartElement, value interface{}, native string, rss bool) ([]Extension, error) {
-	reader := &extensionTokenReader{decoder: d, start: &start, native: native, rss: rss}
+	reader := &extensionTokenReader{decoder: d, start: &start, native: native, rss: rss, content: rss && start.Name.Local == "item"}
 	decoder := xml.NewTokenDecoder(reader)
 	if err := decoder.Decode(value); err != nil {
 		return nil, err
 	}
 	return reader.extensions, nil
+}
+
+// encodeExtensionContent keeps mixed content compact and propagates I/O errors.
+func encodeExtensionContent(w io.Writer, content []ExtensionContent) error {
+	compact := xml.NewEncoder(w)
+	for _, part := range content {
+		n := 0
+		if part.Text != "" {
+			n++
+		}
+		if part.Element != nil {
+			n++
+		}
+		if part.Comment != "" {
+			n++
+		}
+		if n > 1 {
+			return fmt.Errorf("feeds: extension content must contain only one of text, element, or comment")
+		}
+		var err error
+		switch {
+		case part.Element != nil:
+			err = compact.Encode(*part.Element)
+		case part.Comment != "":
+			if strings.Contains(part.Comment, "--") || strings.HasSuffix(part.Comment, "-") {
+				return fmt.Errorf("feeds: invalid XML extension comment")
+			}
+			err = compact.EncodeToken(xml.Comment(part.Comment))
+		default:
+			err = compact.EncodeToken(xml.CharData(part.Text))
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return compact.Flush()
 }

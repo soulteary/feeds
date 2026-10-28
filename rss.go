@@ -23,7 +23,7 @@ type RssFeedXml struct {
 }
 
 type RssContent struct {
-	XMLName xml.Name `xml:"content:encoded"`
+	XMLName xml.Name `xml:"http://purl.org/rss/1.0/modules/content/ encoded"`
 	Content string   `xml:",cdata"`
 }
 
@@ -81,15 +81,16 @@ type RssItem struct {
 	Title       string      `xml:"title"`       // required
 	Link        string      `xml:"link"`        // required
 	Description string      `xml:"description"` // required
-	Content     *RssContent
-	Author      string   `xml:"author,omitempty"`
-	Category    string   `xml:"-"`
-	Categories  []string `xml:"category,omitempty"`
-	Comments    string   `xml:"comments,omitempty"`
+	Content     *RssContent `xml:"http://purl.org/rss/1.0/modules/content/ encoded"`
+	Author      string      `xml:"author,omitempty"`
+	Category    string      `xml:"-"`
+	Categories  []string    `xml:"category,omitempty"`
+	Comments    string      `xml:"comments,omitempty"`
 	Enclosure   *RssEnclosure
-	Guid        *RssGuid // Id used
-	PubDate     string   `xml:"pubDate,omitempty"` // created or updated
-	Source      string   `xml:"source,omitempty"`
+	Guid        *RssGuid   // Id used
+	PubDate     string     `xml:"pubDate,omitempty"` // created or updated
+	Source      string     `xml:"-"`                 // Legacy source text; used as URL fallback on output.
+	SourceInfo  *RssSource `xml:"source,omitempty"`
 }
 
 type RssEnclosure struct {
@@ -188,6 +189,9 @@ func (r *Rss) RssFeed() *RssFeed {
 		}
 	}
 	for _, i := range r.Items {
+		if i == nil {
+			continue
+		}
 		channel.Items = append(channel.Items, newRssItem(i))
 	}
 	return channel
@@ -304,8 +308,20 @@ func (r RssItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if err := validateExtensions(r.Extensions, ""); err != nil {
 		return err
 	}
+	if r.Content != nil {
+		filtered := make([]Extension, 0, len(r.Extensions))
+		for _, extension := range r.Extensions {
+			if extension.XMLName != (xml.Name{Space: rssContentNamespace, Local: "encoded"}) {
+				filtered = append(filtered, extension)
+			}
+		}
+		r.Extensions = filtered
+	}
 	type plain RssItem
 	value := plain(r)
+	if value.SourceInfo == nil && r.Source != "" {
+		value.SourceInfo = &RssSource{URL: r.Source, Name: r.Source}
+	}
 	value.Categories = categoryNames(r.Category, r.Categories)
 	start.Name = r.XMLName
 	if start.Name.Local == "" {
@@ -322,6 +338,7 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain RssItem
 	value := plain(*r)
 	value.Categories = nil
+	value.SourceInfo = nil
 	extensions, err := decodeExtensions(d, start, &value, "", true)
 	if err != nil {
 		return err
@@ -336,6 +353,11 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		value.Category = value.Categories[0]
 	} else {
 		value.Categories = r.Categories
+	}
+	if value.SourceInfo != nil {
+		value.Source = value.SourceInfo.Name
+	} else {
+		value.SourceInfo = r.SourceInfo
 	}
 	*r = RssItem(value)
 	return nil
@@ -369,4 +391,32 @@ func (r *RssFeedXml) FeedXml() interface{} {
 		copy.ContentNamespace = "http://purl.org/rss/1.0/modules/content/"
 	}
 	return &copy
+}
+
+// RssSource preserves the source feed URL and human-readable name.
+// SourceInfo takes precedence over the legacy RssItem.Source string on output.
+type RssSource struct {
+	XMLName xml.Name `xml:"source"`
+	URL     string   `xml:"url,attr"`
+	Name    string   `xml:",chardata"`
+}
+
+// MarshalXML keeps the established content:encoded output spelling.
+func (c RssContent) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Name = xml.Name{Local: "content:encoded"}
+	return e.EncodeElement(struct {
+		Content string `xml:",cdata"`
+	}{c.Content}, start)
+}
+
+// UnmarshalXML decodes content by its expanded namespace name.
+func (c *RssContent) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var value struct {
+		Content string `xml:",chardata"`
+	}
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+	*c = RssContent{XMLName: start.Name, Content: value.Content}
+	return nil
 }

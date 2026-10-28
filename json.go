@@ -201,6 +201,9 @@ func (f *JSON) JSONFeed() *JSONFeed {
 		feed.Authors = []*JSONAuthor{author}
 	}
 	for _, e := range f.Items {
+		if e == nil {
+			continue
+		}
 		feed.Items = append(feed.Items, newJSONItem(e))
 	}
 	return feed
