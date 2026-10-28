@@ -50,6 +50,36 @@ The checked-in [.github test report](../.github/go-test-report.md) and
 pinned CLI versions used in CI. These local results do not claim that remote
 Go 1.20 / multi-OS jobs or vulnerability scans were run locally.
 
+## Main verification after PR #15
+
+For merge revision `4346010`, all seven main checks passed: quality check and
+report publication, security scan, Go 1.20 Linux, and Go 1.27.3 Linux/macOS/Windows.
+The [quality run](https://github.com/soulteary/feeds/actions/runs/40638576542)
+completed both `check` and `publish`, and produced bot commit `4478995`
+(`chore: update Go quality reports [skip ci]`). The coverage report still recorded
+72 passing tests and 888/888 statements (100%); the quality grade stayed A+ / 95.5%.
+Unchanged badge values legitimately produce no SVG diff. The publication commit
+refreshed the quality report; `[skip ci]` intentionally prevents a report-only loop.
+
+The [compatibility run](https://github.com/soulteary/feeds/actions/runs/40638576449)
+and [security run](https://github.com/soulteary/feeds/actions/runs/40638576562)
+also succeeded. The tracked main workflow tree no longer contains `issues.yml`,
+and the merge revision has no `add-to-project` check. PR #15's code review
+completed without findings.
+
+A review on [PR #14](https://github.com/soulteary/feeds/pull/14#discussion_r4397098771)
+identified a separate Atom-to-RSS mapping issue: Atom IDs did not explicitly
+mark converted RSS GUIDs as non-permalinks. The follow-up fix marks nonempty
+Atom IDs with `IsPermaLink="false"`; empty IDs keep the flag empty. Tests cover
+URN and HTTP identifiers, absent/different/matching page links, XML escaping,
+both RSS output APIs, source immutability, and unchanged explicit RSS/generic
+flags and Atom/JSON identifiers. The regression failed on pre-fix main.
+
+The follow-up's pinned local report CLI passes 74 reported tests and 890/890
+statements (100%) on Go 1.27.3 with race enabled. Quality remains A+ (95.4%);
+complexity findings remain visible in the report. This follow-up requires merging
+its separate fix PR before the source change becomes part of main.
+
 ## Workflows
 
 - `quality.yml`: race tests, 100% total/per-package coverage gates, Go Report Card,

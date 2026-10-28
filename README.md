@@ -598,7 +598,13 @@ XML bases, content and foreign extensions are mapped where the source format
 provides them. Atom page links become the primary Link; self, hub and enclosure
 relations stay in Links. The first enclosure also populates Enclosure. Feed
 logo is preferred over icon. Missing Atom entry authors inherit a copied feed
-author. RSS managingEditor/author mailboxes are parsed using net/mail; legacy
+author. Nonempty Atom entry IDs set Item.IsPermaLink to "false": an Atom ID,
+including an HTTP identifier, does not establish an article permalink. RSS output
+therefore emits an explicit isPermaLink="false" on the converted GUID. Callers
+that know an ID is a permalink can explicitly set the shared flag to "true".
+An empty Atom ID keeps the shared flag empty and does not invent an RSS GUID.
+
+RSS managingEditor/author mailboxes are parsed using net/mail; legacy
 non-mailbox strings remain Name. RSS SourceInfo.URL wins over legacy Source,
 including an explicitly empty URL. RSS pubDate maps to Created, lastBuildDate
 to Updated; missing dates remain zero. Atom updated and published remain distinct.

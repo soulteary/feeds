@@ -1,11 +1,11 @@
 # Go Report Card
 
-**Grade: A+** (95.5%)
+**Grade: A+** (95.4%)
 
 | Metric | Value |
 | ------ | ----- |
-| Files | 37 |
-| Issues | 14 |
+| Files | 38 |
+| Issues | 15 |
 
 ## Checks
 
@@ -13,7 +13,7 @@
 | ----- | ----- |
 | gofmt | 100% |
 | go_vet | 100% |
-| gocyclo | 62% |
+| gocyclo | 60% |
 | ineffassign | 100% |
 | license | 100% |
 | misspell | 100% |
@@ -22,43 +22,45 @@
 
 ### gocyclo
 
-- `itunes_test.go`
-  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
-- `xml_base_test.go`
-  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
-- `image_mapping_test.go`
-  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
-- `roundtrip_fixes_test.go`
-  - Line 47: cyclomatic complexity 22 for function TestRSSContentAndSourceRoundtrip
-  - Line 132: cyclomatic complexity 20 for function TestNilItemsAreSkippedWithoutMutation
+- `atom.go`
+  - Line 101: cyclomatic complexity 20 for function newAtomEntry
+- `convert_test.go`
+  - Line 58: cyclomatic complexity 43 for function TestRSSToFeed
+  - Line 11: cyclomatic complexity 38 for function TestAtomToFeed
+  - Line 164: cyclomatic complexity 17 for function TestConversionTextAndTimeSemantics
+- `atom_guid_regression_test.go`
+  - Line 11: cyclomatic complexity 27 for function TestConvertedAtomIdentifierRSSGUID
 - `json_regression_test.go`
   - Line 11: cyclomatic complexity 20 for function TestJSONFieldNamesCompatibility
   - Line 158: cyclomatic complexity 17 for function TestJSONEmptyItemsAllAPIs
   - Line 82: cyclomatic complexity 16 for function TestJSONAttachmentDurationMarshalForms
-- `atom.go`
-  - Line 101: cyclomatic complexity 20 for function newAtomEntry
+- `extensions_test.go`
+  - Line 22: cyclomatic complexity 18 for function TestExtensionsGenericMappings
+- `language_test.go`
+  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
+- `itunes_test.go`
+  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
+- `links_test.go`
+  - Line 13: cyclomatic complexity 26 for function TestFeedMultipleLinksByFormat
+  - Line 128: cyclomatic complexity 21 for function TestAtomMultipleLinkRoundtrip
 - `extensions.go`
   - Line 60: cyclomatic complexity 19 for function (Extension).MarshalXML
   - Line 175: cyclomatic complexity 18 for function (*extensionTokenReader).Token
   - Line 239: cyclomatic complexity 17 for function encodeExtensionContent
   - Line 30: cyclomatic complexity 16 for function validExtensionName
-- `rss_author_test.go`
-  - Line 12: cyclomatic complexity 18 for function TestRSSAuthorContacts
-- `convert_test.go`
-  - Line 58: cyclomatic complexity 43 for function TestRSSToFeed
-  - Line 11: cyclomatic complexity 38 for function TestAtomToFeed
-  - Line 164: cyclomatic complexity 17 for function TestConversionTextAndTimeSemantics
-- `language_test.go`
-  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
-- `links_test.go`
-  - Line 13: cyclomatic complexity 26 for function TestFeedMultipleLinksByFormat
-  - Line 128: cyclomatic complexity 21 for function TestAtomMultipleLinkRoundtrip
-- `categories_test.go`
-  - Line 12: cyclomatic complexity 23 for function TestGenericCategoryMappings
 - `review_namespace_test.go`
   - Line 10: cyclomatic complexity 18 for function TestRSSContentPrefixBinding
-- `extensions_test.go`
-  - Line 22: cyclomatic complexity 18 for function TestExtensionsGenericMappings
+- `xml_base_test.go`
+  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
+- `image_mapping_test.go`
+  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
+- `categories_test.go`
+  - Line 12: cyclomatic complexity 23 for function TestGenericCategoryMappings
+- `roundtrip_fixes_test.go`
+  - Line 47: cyclomatic complexity 22 for function TestRSSContentAndSourceRoundtrip
+  - Line 132: cyclomatic complexity 20 for function TestNilItemsAreSkippedWithoutMutation
+- `rss_author_test.go`
+  - Line 12: cyclomatic complexity 18 for function TestRSSAuthorContacts
 
 ---
 

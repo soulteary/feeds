@@ -141,6 +141,11 @@ func (a *AtomEntry) ToItem() (*Item, error) {
 	}
 	link, links := conversionAtomLinks(nil, a.Links)
 	item := &Item{Title: a.Title, Id: a.Id, XMLBase: a.XMLBase, Language: a.Language, Updated: updated, Created: created, Author: conversionAtomAuthor(a.Author), Link: link, Links: links, Category: a.Category, Categories: conversionAtomCategories(a.Category, a.Categories), Extensions: cloneExtensions(a.Extensions)}
+	// Atom identifiers do not assert an article permalink, even when they
+	// happen to use HTTP. Keep RSS readers from interpreting them as URLs.
+	if a.Id != "" {
+		item.IsPermaLink = "false"
+	}
 	if a.Summary != nil {
 		item.Description, err = conversionAtomText(a.Summary.Content, a.Summary.Type)
 		if err != nil {
