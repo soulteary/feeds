@@ -5,12 +5,15 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
 // Extension is a namespace-aware XML element. Names use namespace URIs in
-// Space and unprefixed local names in Local; prefixes are chosen by encoding/xml.
+// Space and unprefixed local names in Local. Prefix optionally selects an output
+// prefix; otherwise encoding/xml chooses the namespace representation.
 type Extension struct {
+	Prefix  string `json:"-"` // Optional output prefix hint; not retained by decoding.
 	XMLName xml.Name
 	Attrs   []xml.Attr
 	Content []ExtensionContent
@@ -38,6 +41,14 @@ func (x Extension) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
 		return fmt.Errorf("feeds: invalid extension element name %q", x.XMLName.Local)
 	}
 	start := xml.StartElement{Name: x.XMLName}
+	if x.Prefix != "" {
+		if x.XMLName.Space == "" || !validExtensionName(xml.Name{Local: x.Prefix}) || strings.HasPrefix(strings.ToLower(x.Prefix), "xml") {
+			return fmt.Errorf("feeds: invalid extension namespace prefix %q", x.Prefix)
+		}
+		start.Name = xml.Name{Local: x.Prefix + ":" + x.XMLName.Local}
+		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns:" + x.Prefix}, Value: x.XMLName.Space})
+	}
+
 	seen := make(map[xml.Name]bool)
 	for _, attr := range x.Attrs {
 		if !validExtensionName(attr.Name) || attr.Name.Local == "xmlns" || attr.Name.Space == "xmlns" || attr.Name.Space == "http://www.w3.org/2000/xmlns/" {
@@ -47,6 +58,16 @@ func (x Extension) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
 			return fmt.Errorf("feeds: duplicate extension attribute %v", attr.Name)
 		}
 		seen[attr.Name] = true
+		if x.Prefix != "" && attr.Name.Space != "" && attr.Name.Space != "http://www.w3.org/XML/1998/namespace" {
+			// Raw xmlns attributes do not register a prefix in encoding/xml's private
+			// attribute-prefix table. Assign disjoint scoped prefixes to avoid clashes.
+			prefix := "extattr" + strconv.Itoa(len(seen))
+			if prefix == x.Prefix {
+				prefix += "_"
+			}
+			start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns:" + prefix}, Value: attr.Name.Space})
+			attr.Name = xml.Name{Local: prefix + ":" + attr.Name.Local}
+		}
 		start.Attr = append(start.Attr, attr)
 	}
 	// encoding/xml does not automatically reset an inherited default namespace
