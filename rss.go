@@ -54,7 +54,8 @@ type RssFeed struct {
 	WebMaster      string        `xml:"webMaster,omitempty"`
 	PubDate        string        `xml:"pubDate,omitempty"`       // created or updated
 	LastBuildDate  string        `xml:"lastBuildDate,omitempty"` // updated used
-	Category       string        `xml:"category,omitempty"`
+	Category       string        `xml:"-"`
+	Categories     []string      `xml:"category,omitempty"`
 	Generator      string        `xml:"generator,omitempty"`
 	Docs           string        `xml:"docs,omitempty"`
 	Cloud          string        `xml:"cloud,omitempty"`
@@ -73,9 +74,10 @@ type RssItem struct {
 	Link        string   `xml:"link"`        // required
 	Description string   `xml:"description"` // required
 	Content     *RssContent
-	Author      string `xml:"author,omitempty"`
-	Category    string `xml:"category,omitempty"`
-	Comments    string `xml:"comments,omitempty"`
+	Author      string   `xml:"author,omitempty"`
+	Category    string   `xml:"-"`
+	Categories  []string `xml:"category,omitempty"`
+	Comments    string   `xml:"comments,omitempty"`
 	Enclosure   *RssEnclosure
 	Guid        *RssGuid // Id used
 	PubDate     string   `xml:"pubDate,omitempty"` // created or updated
@@ -126,6 +128,11 @@ func newRssItem(i *Item) *RssItem {
 		item.Enclosure = &RssEnclosure{Url: i.Enclosure.Url, Type: i.Enclosure.Type, Length: i.Enclosure.Length}
 	}
 
+	item.Category = i.Category
+	item.Categories = categoryNames(i.Category, i.Categories)
+	if len(item.Categories) > 0 {
+		item.Category = item.Categories[0]
+	}
 	item.Author = rssAuthor(i.Author)
 	return item
 }
@@ -154,6 +161,11 @@ func (r *Rss) RssFeed() *RssFeed {
 		LastBuildDate:  build,
 		Copyright:      r.Copyright,
 		Image:          image,
+	}
+	channel.Category = r.Category
+	channel.Categories = categoryNames(r.Category, r.Categories)
+	if len(channel.Categories) > 0 {
+		channel.Category = channel.Categories[0]
 	}
 	for _, link := range atomLinks(r.Link, r.Links, "application/rss+xml") {
 		if link.Rel == "self" || link.Rel == "hub" {
@@ -216,4 +228,62 @@ type RssAtomLink struct {
 	Rel     string   `xml:"rel,attr,omitempty"`
 	Type    string   `xml:"type,attr,omitempty"`
 	Length  string   `xml:"length,attr,omitempty"`
+}
+
+// MarshalXML combines the legacy Category with Categories without mutation.
+func (r RssFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type plain RssFeed
+	value := plain(r)
+	value.Categories = categoryNames(r.Category, r.Categories)
+	start.Name = r.XMLName
+	if start.Name.Local == "" {
+		start.Name.Local = "channel"
+	}
+	return e.EncodeElement(value, start)
+}
+
+// UnmarshalXML retains all categories and mirrors the first in Category.
+func (r *RssFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type plain RssFeed
+	value := plain(*r)
+	value.Categories = nil
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+	if len(value.Categories) > 0 {
+		value.Category = value.Categories[0]
+	} else {
+		value.Categories = r.Categories
+	}
+	*r = RssFeed(value)
+	return nil
+}
+
+// MarshalXML combines the legacy Category with Categories without mutation.
+func (r RssItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type plain RssItem
+	value := plain(r)
+	value.Categories = categoryNames(r.Category, r.Categories)
+	start.Name = r.XMLName
+	if start.Name.Local == "" {
+		start.Name.Local = "item"
+	}
+	return e.EncodeElement(value, start)
+}
+
+// UnmarshalXML retains all categories and mirrors the first in Category.
+func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type plain RssItem
+	value := plain(*r)
+	value.Categories = nil
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+	if len(value.Categories) > 0 {
+		value.Category = value.Categories[0]
+	} else {
+		value.Categories = r.Categories
+	}
+	*r = RssItem(value)
+	return nil
 }

@@ -40,12 +40,13 @@ type AtomContributor struct {
 }
 
 type AtomEntry struct {
-	XMLName     xml.Name `xml:"entry"`
-	Xmlns       string   `xml:"xmlns,attr,omitempty"`
-	Title       string   `xml:"title"`   // required
-	Updated     string   `xml:"updated"` // required
-	Id          string   `xml:"id"`      // required
-	Category    string   `xml:"category,omitempty"`
+	XMLName     xml.Name       `xml:"entry"`
+	Xmlns       string         `xml:"xmlns,attr,omitempty"`
+	Title       string         `xml:"title"`   // required
+	Updated     string         `xml:"updated"` // required
+	Id          string         `xml:"id"`      // required
+	Category    string         `xml:"-"`
+	Categories  []AtomCategory `xml:"category,omitempty"`
 	Content     *AtomContent
 	Rights      string `xml:"rights,omitempty"`
 	Source      string `xml:"source,omitempty"`
@@ -67,19 +68,20 @@ type AtomLink struct {
 }
 
 type AtomFeed struct {
-	XMLName     xml.Name    `xml:"feed"`
-	Xmlns       string      `xml:"xmlns,attr"`
-	Title       string      `xml:"title"`   // required
-	Id          string      `xml:"id"`      // required
-	Updated     string      `xml:"updated"` // required
-	Category    string      `xml:"category,omitempty"`
-	Icon        string      `xml:"icon,omitempty"`
-	Logo        string      `xml:"logo,omitempty"`
-	Rights      string      `xml:"rights,omitempty"` // copyright used
-	Subtitle    string      `xml:"subtitle,omitempty"`
-	Link        *AtomLink   `xml:"-"`              // First link, retained for compatibility.
-	Links       []AtomLink  `xml:"link,omitempty"` // Additional links.
-	Author      *AtomAuthor `xml:"author,omitempty"`
+	XMLName     xml.Name       `xml:"feed"`
+	Xmlns       string         `xml:"xmlns,attr"`
+	Title       string         `xml:"title"`   // required
+	Id          string         `xml:"id"`      // required
+	Updated     string         `xml:"updated"` // required
+	Category    string         `xml:"-"`
+	Categories  []AtomCategory `xml:"category,omitempty"`
+	Icon        string         `xml:"icon,omitempty"`
+	Logo        string         `xml:"logo,omitempty"`
+	Rights      string         `xml:"rights,omitempty"` // copyright used
+	Subtitle    string         `xml:"subtitle,omitempty"`
+	Link        *AtomLink      `xml:"-"`              // First link, retained for compatibility.
+	Links       []AtomLink     `xml:"link,omitempty"` // Additional links.
+	Author      *AtomAuthor    `xml:"author,omitempty"`
 	Contributor *AtomContributor
 	Entries     []*AtomEntry `xml:"entry"`
 }
@@ -127,6 +129,11 @@ func newAtomEntry(i *Item) *AtomEntry {
 		Published: anyTimeFormat(time.RFC3339, i.Created),
 	}
 
+	x.Category = i.Category
+	x.Categories = atomCategoriesFromNames(i.Category, i.Categories)
+	if len(x.Categories) > 0 {
+		x.Category = x.Categories[0].Term
+	}
 	if (i.Link != nil && i.Link.Href != "") || len(i.Links) > 0 {
 		x.Links = atomLinks(i.Link, i.Links, "")
 	}
@@ -178,6 +185,11 @@ func (a *Atom) AtomFeed() *AtomFeed {
 		Updated:  updated,
 		Rights:   a.Copyright,
 	}
+	feed.Category = a.Category
+	feed.Categories = atomCategoriesFromNames(a.Category, a.Categories)
+	if len(feed.Categories) > 0 {
+		feed.Category = feed.Categories[0].Term
+	}
 	if (a.Link != nil && a.Link.Href != "") || len(a.Links) > 0 {
 		feed.Link = nil
 		links := atomLinks(a.Link, a.Links, "application/atom+xml")
@@ -209,6 +221,7 @@ func (a *AtomFeed) FeedXml() interface{} {
 func (a AtomFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	type atomFeed AtomFeed
 	copy := atomFeed(a)
+	copy.Categories = atomCategories(a.Category, a.Categories)
 	copy.Links = append([]AtomLink(nil), a.Links...)
 	if a.Link != nil {
 		copy.Links = append([]AtomLink{*a.Link}, copy.Links...)
@@ -228,6 +241,7 @@ func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type atomFeed AtomFeed
 	decoded := atomFeed(*a)
 	decoded.Links = nil
+	decoded.Categories = nil
 	if err := d.DecodeElement(&decoded, &start); err != nil {
 		return err
 	}
@@ -242,6 +256,43 @@ func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 			decoded.Links = nil
 		}
 	}
+	if len(decoded.Categories) > 0 {
+		decoded.Category = decoded.Categories[0].Term
+	} else {
+		decoded.Categories = a.Categories
+	}
 	*a = AtomFeed(decoded)
+	return nil
+}
+
+// MarshalXML emits categories using Atom term attributes, including Category.
+func (a AtomEntry) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type plain AtomEntry
+	value := plain(a)
+	value.Categories = atomCategories(a.Category, a.Categories)
+	start.Name = a.XMLName
+	if start.Name.Local == "" {
+		start.Name.Local = "entry"
+	}
+	if a.Xmlns != "" {
+		start.Name.Space = ""
+	}
+	return e.EncodeElement(value, start)
+}
+
+// UnmarshalXML retains category metadata and mirrors the first term in Category.
+func (a *AtomEntry) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type plain AtomEntry
+	value := plain(*a)
+	value.Categories = nil
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+	if len(value.Categories) > 0 {
+		value.Category = value.Categories[0].Term
+	} else {
+		value.Categories = a.Categories
+	}
+	*a = AtomEntry(value)
 	return nil
 }
