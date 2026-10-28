@@ -40,6 +40,7 @@ type AtomContributor struct {
 }
 
 type AtomEntry struct {
+	Extensions  []Extension    `xml:"-"`
 	XMLName     xml.Name       `xml:"entry"`
 	Xmlns       string         `xml:"xmlns,attr,omitempty"`
 	Language    string         `xml:"http://www.w3.org/XML/1998/namespace lang,attr,omitempty"`
@@ -69,6 +70,7 @@ type AtomLink struct {
 }
 
 type AtomFeed struct {
+	Extensions  []Extension    `xml:"-"`
 	XMLName     xml.Name       `xml:"feed"`
 	Xmlns       string         `xml:"xmlns,attr"`
 	Language    string         `xml:"http://www.w3.org/XML/1998/namespace lang,attr,omitempty"`
@@ -132,6 +134,7 @@ func newAtomEntry(i *Item) *AtomEntry {
 		Published: anyTimeFormat(time.RFC3339, i.Created),
 	}
 
+	x.Extensions = i.Extensions
 	x.Category = i.Category
 	x.Categories = atomCategoriesFromNames(i.Category, i.Categories)
 	if len(x.Categories) > 0 {
@@ -189,6 +192,7 @@ func (a *Atom) AtomFeed() *AtomFeed {
 		Updated:  updated,
 		Rights:   a.Copyright,
 	}
+	feed.Extensions = a.Extensions
 	feed.Category = a.Category
 	feed.Categories = atomCategoriesFromNames(a.Category, a.Categories)
 	if len(feed.Categories) > 0 {
@@ -223,6 +227,9 @@ func (a *AtomFeed) FeedXml() interface{} {
 
 // MarshalXML writes Link followed by Links without changing the source feed.
 func (a AtomFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if err := validateExtensions(a.Extensions, ns); err != nil {
+		return err
+	}
 	type atomFeed AtomFeed
 	copy := atomFeed(a)
 	copy.Categories = atomCategories(a.Category, a.Categories)
@@ -237,7 +244,10 @@ func (a AtomFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if a.Xmlns != "" {
 		start.Name.Space = ""
 	}
-	return e.EncodeElement(copy, start)
+	return e.EncodeElement(struct {
+		atomFeed
+		XMLChildren []Extension `xml:",any"`
+	}{atomFeed: copy, XMLChildren: a.Extensions}, start)
 }
 
 // UnmarshalXML keeps the first link in Link and subsequent links in Links.
@@ -246,8 +256,12 @@ func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	decoded := atomFeed(*a)
 	decoded.Links = nil
 	decoded.Categories = nil
-	if err := d.DecodeElement(&decoded, &start); err != nil {
+	extensions, err := decodeExtensions(d, start, &decoded, ns, false)
+	if err != nil {
 		return err
+	}
+	if extensions != nil {
+		decoded.Extensions = extensions
 	}
 	if len(decoded.Links) == 0 {
 		decoded.Links = a.Links
@@ -271,6 +285,9 @@ func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // MarshalXML emits categories using Atom term attributes, including Category.
 func (a AtomEntry) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if err := validateExtensions(a.Extensions, ns); err != nil {
+		return err
+	}
 	type plain AtomEntry
 	value := plain(a)
 	value.Categories = atomCategories(a.Category, a.Categories)
@@ -281,7 +298,10 @@ func (a AtomEntry) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if a.Xmlns != "" {
 		start.Name.Space = ""
 	}
-	return e.EncodeElement(value, start)
+	return e.EncodeElement(struct {
+		plain
+		XMLChildren []Extension `xml:",any"`
+	}{plain: value, XMLChildren: a.Extensions}, start)
 }
 
 // UnmarshalXML retains category metadata and mirrors the first term in Category.
@@ -289,8 +309,12 @@ func (a *AtomEntry) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain AtomEntry
 	value := plain(*a)
 	value.Categories = nil
-	if err := d.DecodeElement(&value, &start); err != nil {
+	extensions, err := decodeExtensions(d, start, &value, ns, false)
+	if err != nil {
 		return err
+	}
+	if extensions != nil {
+		value.Extensions = extensions
 	}
 	if len(value.Categories) > 0 {
 		value.Category = value.Categories[0].Term
