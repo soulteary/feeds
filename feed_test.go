@@ -86,7 +86,7 @@ var rssOutput = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:
       <title>Limiting Concurrency in Go</title>
       <link>http://jmoiron.net/blog/limiting-concurrency-in-go/</link>
       <description>A discussion on controlled parallelism in golang</description>
-      <content:encoded><![CDATA[<p>Go's goroutines make it easy to make <a href="http://collectiveidea.com/blog/archives/2012/12/03/playing-with-go-embarrassingly-parallel-scripts/">embarrassingly parallel programs</a>, but in many &quot;real world&quot; cases resources can be limited and attempting to do everything at once can exhaust your access to them.</p>]]></content:encoded>
+      <content:encoded xmlns:content="http://purl.org/rss/1.0/modules/content/"><![CDATA[<p>Go's goroutines make it easy to make <a href="http://collectiveidea.com/blog/archives/2012/12/03/playing-with-go-embarrassingly-parallel-scripts/">embarrassingly parallel programs</a>, but in many &quot;real world&quot; cases resources can be limited and attempting to do everything at once can exhaust your access to them.</p>]]></content:encoded>
       <author>jmoiron@jmoiron.net (Jason Moiron)</author>
       <pubDate>Wed, 16 Jan 2013 21:52:35 -0500</pubDate>
     </item>
@@ -120,7 +120,7 @@ var rssOutput = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:
       <title>Go Proverb #1</title>
       <link>https://go-proverbs.github.io/</link>
       <description></description>
-      <content:encoded><![CDATA[Don't communicate by sharing memory, share memory by communicating.]]></content:encoded>
+      <content:encoded xmlns:content="http://purl.org/rss/1.0/modules/content/"><![CDATA[Don't communicate by sharing memory, share memory by communicating.]]></content:encoded>
       <pubDate>Wed, 16 Jan 2013 21:52:35 -0500</pubDate>
     </item>
   </channel>

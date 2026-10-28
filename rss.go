@@ -404,6 +404,7 @@ type RssSource struct {
 // MarshalXML keeps the established content:encoded output spelling.
 func (c RssContent) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	start.Name = xml.Name{Local: "content:encoded"}
+	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns:content"}, Value: rssContentNamespace})
 	return e.EncodeElement(struct {
 		Content string `xml:",cdata"`
 	}{c.Content}, start)
