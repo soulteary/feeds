@@ -22,31 +22,34 @@ type JSONAttachment struct {
 	Url      string        `json:"url,omitempty"`
 	MIMEType string        `json:"mime_type,omitempty"`
 	Title    string        `json:"title,omitempty"`
-	Size     int32         `json:"size,omitempty"`
+	Size     int32         `json:"size_in_bytes,omitempty"`
 	Duration time.Duration `json:"duration_in_seconds,omitempty"`
 }
 
 // MarshalJSON implements the json.Marshaler interface.
 // The Duration field is marshaled in seconds, all other fields are marshaled
 // based upon the definitions in struct tags.
-func (a *JSONAttachment) MarshalJSON() ([]byte, error) {
+func (a JSONAttachment) MarshalJSON() ([]byte, error) {
 	type EmbeddedJSONAttachment JSONAttachment
 	return json.Marshal(&struct {
 		Duration float64 `json:"duration_in_seconds,omitempty"`
 		*EmbeddedJSONAttachment
 	}{
-		EmbeddedJSONAttachment: (*EmbeddedJSONAttachment)(a),
+		EmbeddedJSONAttachment: (*EmbeddedJSONAttachment)(&a),
 		Duration:               a.Duration.Seconds(),
 	})
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 // The Duration field is expected to be in seconds, all other field types
-// match the struct definition.
+// match the struct definition. The legacy size key is accepted on input;
+// size_in_bytes takes precedence when both are present.
 func (a *JSONAttachment) UnmarshalJSON(data []byte) error {
 	type EmbeddedJSONAttachment JSONAttachment
 	var raw struct {
-		Duration float64 `json:"duration_in_seconds,omitempty"`
+		Duration   *float64        `json:"duration_in_seconds,omitempty"`
+		Size       json.RawMessage `json:"size_in_bytes"`
+		LegacySize json.RawMessage `json:"size"`
 		*EmbeddedJSONAttachment
 	}
 	raw.EmbeddedJSONAttachment = (*EmbeddedJSONAttachment)(a)
@@ -56,8 +59,18 @@ func (a *JSONAttachment) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	if raw.Duration > 0 {
-		nsec := int64(raw.Duration * float64(time.Second))
+	// Prefer the standard key even when it explicitly contains zero or null.
+	size := raw.Size
+	if len(size) == 0 {
+		size = raw.LegacySize
+	}
+	if len(size) != 0 {
+		if err := json.Unmarshal(size, &a.Size); err != nil {
+			return err
+		}
+	}
+	if raw.Duration != nil && *raw.Duration >= 0 {
+		nsec := int64(*raw.Duration * float64(time.Second))
 		raw.EmbeddedJSONAttachment.Duration = time.Duration(nsec)
 	}
 
@@ -74,13 +87,35 @@ type JSONItem struct {
 	ContentText   string           `json:"content_text,omitempty"`
 	Summary       string           `json:"summary,omitempty"`
 	Image         string           `json:"image,omitempty"`
-	BannerImage   string           `json:"banner_,omitempty"`
+	BannerImage   string           `json:"banner_image,omitempty"`
 	PublishedDate *time.Time       `json:"date_published,omitempty"`
 	ModifiedDate  *time.Time       `json:"date_modified,omitempty"`
 	Author        *JSONAuthor      `json:"author,omitempty"` // deprecated in JSON Feed v1.1, keeping for backwards compatibility
 	Authors       []*JSONAuthor    `json:"authors,omitempty"`
 	Tags          []string         `json:"tags,omitempty"`
 	Attachments   []JSONAttachment `json:"attachments,omitempty"`
+}
+
+// UnmarshalJSON accepts the legacy banner_ key while preferring banner_image.
+// Marshaling always uses the standard JSON Feed field name.
+func (i *JSONItem) UnmarshalJSON(data []byte) error {
+	type item JSONItem
+	raw := struct {
+		*item
+		BannerImage       json.RawMessage `json:"banner_image"`
+		LegacyBannerImage json.RawMessage `json:"banner_"`
+	}{item: (*item)(i)}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	banner := raw.BannerImage
+	if len(banner) == 0 {
+		banner = raw.LegacyBannerImage
+	}
+	if len(banner) != 0 {
+		return json.Unmarshal(banner, &i.BannerImage)
+	}
+	return nil
 }
 
 // JSONHub describes an endpoint that can be used to subscribe to real-time
@@ -107,7 +142,16 @@ type JSONFeed struct {
 	Authors     []*JSONAuthor `json:"authors,omitempty"`
 	Expired     *bool         `json:"expired,omitempty"`
 	Hubs        []*JSONHub    `json:"hubs,omitempty"`
-	Items       []*JSONItem   `json:"items,omitempty"`
+	Items       []*JSONItem   `json:"items"`
+}
+
+// MarshalJSON includes the required items array without changing the source.
+func (f JSONFeed) MarshalJSON() ([]byte, error) {
+	type feed JSONFeed
+	if f.Items == nil {
+		f.Items = []*JSONItem{}
+	}
+	return json.Marshal(feed(f))
 }
 
 // JSON is used to convert a generic Feed to a JSONFeed.
