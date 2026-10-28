@@ -7,6 +7,8 @@ package feeds
 import (
 	"encoding/xml"
 	"fmt"
+	"net/mail"
+	"strings"
 	"time"
 )
 
@@ -123,9 +125,7 @@ func newRssItem(i *Item) *RssItem {
 		item.Enclosure = &RssEnclosure{Url: i.Enclosure.Url, Type: i.Enclosure.Type, Length: i.Enclosure.Length}
 	}
 
-	if i.Author != nil {
-		item.Author = i.Author.Name
-	}
+	item.Author = rssAuthor(i.Author)
 	return item
 }
 
@@ -133,13 +133,7 @@ func newRssItem(i *Item) *RssItem {
 func (r *Rss) RssFeed() *RssFeed {
 	pub := anyTimeFormat(time.RFC1123Z, r.Created, r.Updated)
 	build := anyTimeFormat(time.RFC1123Z, r.Updated)
-	author := ""
-	if r.Author != nil {
-		author = r.Author.Email
-		if len(r.Author.Name) > 0 {
-			author = fmt.Sprintf("%s (%s)", r.Author.Email, r.Author.Name)
-		}
-	}
+	author := rssAuthor(r.Author)
 
 	var image *RssImage
 	if r.Image != nil {
@@ -164,6 +158,33 @@ func (r *Rss) RssFeed() *RssFeed {
 		channel.Items = append(channel.Items, newRssItem(i))
 	}
 	return channel
+}
+
+// rssAuthor formats the optional RSS contact fields. A name alone is not an
+// email address, so omit the field when no single valid mailbox is available.
+func rssAuthor(author *Author) string {
+	if author == nil || strings.ContainsAny(author.Email, "\r\n") {
+		return ""
+	}
+	address, err := mail.ParseAddress(strings.TrimSpace(author.Email))
+	if err != nil {
+		return ""
+	}
+	// Address.String preserves quoting for local parts that need it. Remove its
+	// enclosing angle brackets to retain the existing email (name) RSS format.
+	mailbox := (&mail.Address{Address: address.Address}).String()
+	mailbox = strings.TrimSuffix(strings.TrimPrefix(mailbox, "<"), ">")
+	name := strings.TrimSpace(author.Name)
+	if name == "" {
+		name = address.Name
+	}
+	if name == "" {
+		return mailbox
+	}
+	// Keep the display name inside one RFC-style comment, even when it contains
+	// parentheses or backslashes, and prevent line breaks in the contact value.
+	name = strings.NewReplacer("\\", "\\\\", "(", "\\(", ")", "\\)", "\r", " ", "\n", " ").Replace(name)
+	return fmt.Sprintf("%s (%s)", mailbox, name)
 }
 
 // FeedXml returns an XML-Ready object for an Rss object
