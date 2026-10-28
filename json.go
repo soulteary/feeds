@@ -79,6 +79,7 @@ func (a *JSONAttachment) UnmarshalJSON(data []byte) error {
 
 // JSONItem represents a single entry/post for the feed.
 type JSONItem struct {
+	Language      string           `json:"language,omitempty"`
 	Id            string           `json:"id"`
 	Url           string           `json:"url,omitempty"`
 	ExternalUrl   string           `json:"external_url,omitempty"`
@@ -179,6 +180,7 @@ func (f *JSON) JSONFeed() *JSONFeed {
 	feed := &JSONFeed{
 		Version:     jsonFeedVersion,
 		Title:       f.Title,
+		Language:    f.Language,
 		Description: f.Description,
 	}
 
@@ -203,9 +205,10 @@ func (f *JSON) JSONFeed() *JSONFeed {
 
 func newJSONItem(i *Item) *JSONItem {
 	item := &JSONItem{
-		Id:      i.Id,
-		Title:   i.Title,
-		Summary: i.Description,
+		Id:       i.Id,
+		Title:    i.Title,
+		Language: i.Language,
+		Summary:  i.Description,
 
 		ContentHTML: i.Content,
 		Tags:        categoryNames(i.Category, i.Categories),

@@ -154,6 +154,7 @@ func (r *Rss) RssFeed() *RssFeed {
 	}
 	channel := &RssFeed{
 		Title:          r.Title,
+		Language:       r.Language,
 		Link:           href,
 		Description:    r.Description,
 		ManagingEditor: author,
