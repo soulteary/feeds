@@ -1,35 +1,35 @@
-name: Test
+name: Compatibility
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: compatibility-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   unit:
     strategy:
+      fail-fast: false
       matrix:
-        go: ['1.20','1.21']
-        os: [ubuntu-latest, macos-latest, windows-latest]
-      fail-fast: true
+        include:
+          - os: ubuntu-22.04
+            go: '1.20.x'
+          - os: ubuntu-latest
+            go: '1.27.3'
+          - os: macos-latest
+            go: '1.27.3'
+          - os: windows-latest
+            go: '1.27.3'
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Setup Go ${{ matrix.go }}
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           cache: false
-
-      - name: Run Tests
-        run: go test -race -cover -coverprofile=coverage -covermode=atomic -v ./...
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage
+      - run: go test -race ./...
+      - run: go vet ./...

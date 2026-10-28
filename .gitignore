@@ -1,1 +1,5 @@
 coverage.coverprofile
+
+.github/test-results/
+coverage.out
+*.test

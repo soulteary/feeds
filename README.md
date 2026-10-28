@@ -1,18 +1,44 @@
-## gorilla/feeds
-![testing](https://github.com/gorilla/feeds/actions/workflows/test.yml/badge.svg)
-[![codecov](https://codecov.io/github/gorilla/feeds/branch/main/graph/badge.svg)](https://codecov.io/github/gorilla/feeds)
-[![godoc](https://godoc.org/github.com/gorilla/feeds?status.svg)](https://godoc.org/github.com/gorilla/feeds)
-[![sourcegraph](https://sourcegraph.com/github.com/gorilla/feeds/-/badge.svg)](https://sourcegraph.com/github.com/gorilla/feeds?badge)
+# soulteary/feeds
 
-![Gorilla Logo](https://github.com/gorilla/.github/assets/53367916/d92caabf-98e0-473e-bfbf-ab554ba435e5)
+Independently maintained fork of [gorilla/feeds](https://github.com/gorilla/feeds).
+The existing module path `github.com/gorilla/feeds` and Go 1.20 minimum are retained.
+
+[![Go Test Coverage](./.github/coverage.svg)](./.github/go-test-report.md)
+[![Go Report Card](./.github/goreportcard.svg)](./.github/goreportcard-report.md)
+[![Compatibility](https://github.com/soulteary/feeds/actions/workflows/test.yml/badge.svg)](https://github.com/soulteary/feeds/actions/workflows/test.yml)
+[![Security](https://github.com/soulteary/feeds/actions/workflows/security.yml/badge.svg)](https://github.com/soulteary/feeds/actions/workflows/security.yml)
 
 feeds is a web feed generator library for generating RSS, Atom and JSON feeds from Go
 applications.
 
+### Tests, quality reports and performance
+
+Following [soulteary/cascadia](https://github.com/soulteary/cascadia), the Go quality
+workflow uses [go-test-report-action](https://github.com/soulteary/go-test-report-action)
+to run race-enabled tests and enforce 100% total and per-package statement
+coverage, and [goreportcard-action](https://github.com/soulteary/goreportcard-action)
+to generate the local quality badge/report. Reports and raw test output are
+uploaded as artifacts. PR checks have read-only permissions; successful main
+runs publish stable reports only if main still matches the tested revision.
+Initial checked-in reports were generated locally; subsequent main runs refresh
+them in CI. A 100% statement result does not prove all branches or inputs correct.
+
+The reporting/security toolchain is pinned in `.github/go-version`; it is separate
+from the module's Go 1.20 minimum. Compatibility tests cover Go 1.20 on Linux and
+the reporting version on Linux, macOS and Windows. Security checks use GoSec and
+govulncheck. A manual benchmark workflow records timings and allocations without
+using noisy shared-runner latency as a pass/fail threshold.
+
+See [testing and CI](docs/testing.md) and [performance measurements](docs/performance.md)
+for fixtures, raw results, compatibility checks, limitations and reproduction.
+The XML extension optimization avoids per-name decoders for ordinary ASCII names
+and per-leaf encoders for simple text, preserving the fallback and escaping rules.
+Existing public APIs, dependencies and wire formats are unchanged.
+
 ### Goals
 
  * Provide a simple interface to create both Atom & RSS 2.0 feeds
- * Full support for [Atom][atom], [RSS 2.0][rss], and [JSON Feed Version 1][jsonfeed] spec elements
+ * Support common [Atom][atom], [RSS 2.0][rss], and [JSON Feed 1.1][jsonfeed] metadata with low-level format controls
  * Ability to modify particulars for each spec
 
 [atom]: https://tools.ietf.org/html/rfc4287

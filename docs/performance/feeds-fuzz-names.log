@@ -1,0 +1,7 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/17 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 17/17 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 33510 (11166/sec), new interesting: 62 (total: 79)
+fuzz: elapsed: 6s, execs: 33510 (0/sec), new interesting: 62 (total: 79)
+fuzz: elapsed: 6s, execs: 33510 (0/sec), new interesting: 62 (total: 79)
+PASS
+ok  	github.com/gorilla/feeds	6.917s

@@ -31,6 +31,27 @@ func validExtensionName(name xml.Name) bool {
 	if name.Local == "" || strings.ContainsAny(name.Local, ": \t\r\n<>/&=\"'") {
 		return false
 	}
+	// Most extension names are ASCII. Validate those without allocating an
+	// XML decoder; retain the established decoder rules for all other names.
+	ascii := true
+	for i := 0; i < len(name.Local); i++ {
+		c := name.Local[i]
+		if c >= 128 {
+			ascii = false
+			break
+		}
+		if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' {
+			continue
+		}
+		if i > 0 && (c >= '0' && c <= '9' || c == '.' || c == '-') {
+			continue
+		}
+		ascii = false
+		break
+	}
+	if ascii {
+		return true
+	}
 	_, err := xml.NewDecoder(strings.NewReader("<" + name.Local + "/>")).Token()
 	return err == nil
 }
@@ -202,8 +223,31 @@ func decodeExtensions(d *xml.Decoder, start xml.StartElement, value interface{},
 	return reader.extensions, nil
 }
 
+// extensionTextWriter preserves the short-write error previously supplied by
+// the XML encoder's buffered writer, including writers returning no error.
+type extensionTextWriter struct{ io.Writer }
+
+func (w extensionTextWriter) Write(p []byte) (int, error) {
+	n, err := w.Writer.Write(p)
+	if n != len(p) && err == nil {
+		err = io.ErrShortWrite
+	}
+	return n, err
+}
+
 // encodeExtensionContent keeps mixed content compact and propagates I/O errors.
 func encodeExtensionContent(w io.Writer, content []ExtensionContent) error {
+	if len(content) == 0 {
+		return nil
+	}
+	// EscapeText and EncodeToken(CharData) differ in newline spelling. Keep
+	// newline-bearing text on the existing encoder path for byte compatibility.
+	if len(content) == 1 && content[0].Element == nil && content[0].Comment == "" && !strings.Contains(content[0].Text, "\n") {
+		if content[0].Text == "" {
+			return nil
+		}
+		return xml.EscapeText(extensionTextWriter{w}, []byte(content[0].Text))
+	}
 	compact := xml.NewEncoder(w)
 	for _, part := range content {
 		n := 0

@@ -1,0 +1,22 @@
+name: Benchmarks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .github/go-version
+          cache: false
+      - name: Run allocation and timing benchmarks
+        env:
+          GOMAXPROCS: '1'
+        run: go test -run '^$' -bench 'BenchmarkFeedFormats|BenchmarkXMLExtensions' -benchmem -count=5 -cpu=1 > benchmark.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: go-benchmarks
+          path: benchmark.txt

@@ -1,0 +1,26 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkPerformance/ToAtom/1000         	      74	   4517708 ns/op	 3691776 B/op	   14037 allocs/op
+BenchmarkPerformance/ToAtom/1000         	      75	   4866458 ns/op	 3691776 B/op	   14037 allocs/op
+BenchmarkPerformance/ToAtom/1000         	      78	   4685838 ns/op	 3691776 B/op	   14037 allocs/op
+BenchmarkPerformance/ToAtom/1000         	      68	   4786152 ns/op	 3691776 B/op	   14037 allocs/op
+BenchmarkPerformance/ToAtom/1000         	      66	   5665016 ns/op	 3691776 B/op	   14037 allocs/op
+BenchmarkPerformance/ToRSS/1000          	      90	   4652244 ns/op	 3005096 B/op	   15037 allocs/op
+BenchmarkPerformance/ToRSS/1000          	      70	   7272519 ns/op	 3005096 B/op	   15037 allocs/op
+BenchmarkPerformance/ToRSS/1000          	      62	   6119696 ns/op	 3005096 B/op	   15037 allocs/op
+BenchmarkPerformance/ToRSS/1000          	      57	   5955710 ns/op	 3005096 B/op	   15037 allocs/op
+BenchmarkPerformance/ToRSS/1000          	      75	   5272415 ns/op	 3005096 B/op	   15037 allocs/op
+BenchmarkPerformance/ToJSON/1000         	     144	   2588635 ns/op	 1279481 B/op	    2011 allocs/op
+BenchmarkPerformance/ToJSON/1000         	     153	   2633680 ns/op	 1279482 B/op	    2011 allocs/op
+BenchmarkPerformance/ToJSON/1000         	     147	   2540138 ns/op	 1279483 B/op	    2011 allocs/op
+BenchmarkPerformance/ToJSON/1000         	     124	   3418548 ns/op	 1298626 B/op	    2012 allocs/op
+BenchmarkPerformance/ToJSON/1000         	     146	   3029511 ns/op	 1295741 B/op	    2011 allocs/op
+BenchmarkExtensions                      	     308	   1259403 ns/op	  878584 B/op	    3336 allocs/op
+BenchmarkExtensions                      	     441	    711582 ns/op	  878509 B/op	    3335 allocs/op
+BenchmarkExtensions                      	     512	    888260 ns/op	  878485 B/op	    3334 allocs/op
+BenchmarkExtensions                      	     510	    731593 ns/op	  878485 B/op	    3334 allocs/op
+BenchmarkExtensions                      	     516	    837869 ns/op	  878484 B/op	    3334 allocs/op
+PASS
+ok  	github.com/gorilla/feeds	11.423s

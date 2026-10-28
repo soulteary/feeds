@@ -1,0 +1,25 @@
+File: feeds.test
+Type: alloc_space
+Time: 2026-10-28 13:15:19 CST
+Showing nodes accounting for 4.51GB, 97.12% of 4.65GB total
+Dropped 27 nodes (cum <= 0.02GB)
+Showing top 18 nodes out of 44
+      flat  flat%   sum%        cum   cum%
+    2.59GB 55.64% 55.64%     2.59GB 55.64%  bufio.NewWriterSize (inline)
+    0.31GB  6.72% 62.36%     4.64GB 99.90%  github.com/gorilla/feeds.ToXML
+    0.31GB  6.68% 69.05%     0.31GB  6.68%  encoding/xml.NewDecoder
+    0.29GB  6.17% 75.22%     0.29GB  6.17%  bytes.growSlice
+    0.16GB  3.39% 78.61%     0.21GB  4.59%  github.com/gorilla/feeds.newAtomEntry
+    0.15GB  3.12% 81.73%     0.15GB  3.12%  reflect.unsafe_New
+    0.11GB  2.39% 84.11%     3.98GB 85.62%  github.com/gorilla/feeds.AtomEntry.MarshalXML
+    0.10GB  2.25% 86.36%     0.39GB  8.42%  bytes.(*Buffer).grow
+    0.09GB  1.93% 88.30%     2.68GB 57.57%  encoding/xml.NewEncoder (inline)
+    0.07GB  1.44% 89.73%     0.14GB  3.03%  encoding/xml.(*Decoder).rawToken
+    0.06GB  1.23% 90.96%     0.25GB  5.38%  encoding/xml.(*Decoder).Token
+    0.05GB  1.14% 92.11%     0.05GB  1.14%  encoding/xml.(*printer).marshalAttr
+    0.05GB  1.12% 93.23%     0.05GB  1.12%  encoding/xml.(*Decoder).push (inline)
+    0.05GB  1.02% 94.25%     3.74GB 80.53%  github.com/gorilla/feeds.Extension.MarshalXML
+    0.04GB  0.87% 95.12%     4.09GB 88.08%  encoding/xml.(*printer).marshalStruct
+    0.03GB  0.74% 95.86%     2.99GB 64.32%  github.com/gorilla/feeds.encodeExtensionContent
+    0.03GB  0.67% 96.53%     0.03GB  0.67%  bytes.(*Buffer).String (inline)
+    0.03GB  0.59% 97.12%     0.04GB  0.93%  github.com/gorilla/feeds.atomLinks
