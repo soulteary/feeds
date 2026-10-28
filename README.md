@@ -156,8 +156,10 @@ explicit item override, using language tags such as `en-US`, `zh-Hant-TW`, or
 
 The existing `RssFeed.Language` and `JSONFeed.Language` remain strings. New
 `AtomFeed.Language`, `AtomEntry.Language`, and `JSONItem.Language` fields support
-low-level encoding/decoding as well. Empty strings are omitted; the string API
-models unspecified/inherited languages, not an explicit empty `xml:lang` reset.
+low-level encoding/decoding as well. Empty strings are normally omitted. Low-level `AtomFeed.LanguageSet` and
+`AtomEntry.LanguageSet` distinguish explicitly present languages: set the flag
+with an empty `Language` to emit `xml:lang=""` and clear inherited language.
+XML decoding retains this presence flag; it does not copy inherited values.
 Values are preserved exactly, without forced validation or normalization. Callers
 remain responsible for supplying valid language tags. Source objects are not
 mutated, and feeds without language values keep their previous output. No new
@@ -335,6 +337,33 @@ image validation is performed. Callers provide suitable assets for each format;
 relative XML references can use the existing `XMLBase` context. The `Image` type
 and all existing fields remain unchanged. Feeds without images retain their
 previous output, and no dependency is added.
+
+### XML roundtrip and empty-item behavior
+
+Atom entry links are decoded into `AtomEntry.Links`, including alternate and
+media enclosure links. Explicit incoming link elements replace an existing entry
+link collection; absent links preserve the current collection.
+
+RSS `content:encoded` is recognized by its namespace URI rather than a particular
+prefix and decoded into `RssItem.Content`. It is no longer also retained as a raw
+extension. If a caller supplies both typed Content and a matching raw extension,
+typed Content wins, so the body is emitted once without altering source slices.
+Existing RSS content output keeps its `content:encoded`/CDATA spelling.
+
+`RssItem.Source` remains a string. On legacy output it supplies both the source
+text and its `url` attribute. To distinguish a source feed's URL from its name,
+set `RssItem.SourceInfo = &RssSource{URL: "https://example.com/feed", Name: "Name"}`.
+The structured value takes precedence; decoding retains the URL/name there and
+mirrors the source text in `Source`. Missing source elements preserve existing
+values, while explicit elements replace them.
+
+Generic Atom/RSS/JSON conversion skips nil entries in `Feed.Items`, preserves
+the order of the remaining entries, and leaves the original slice untouched.
+A feed containing only nil entries has the same output as an empty feed.
+
+These fixes retain existing public field types and function signatures. The new
+low-level presence/source fields can require updates to positional struct literals.
+No third-party dependency is introduced.
 
 ### Complete example
 

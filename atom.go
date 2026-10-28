@@ -40,6 +40,7 @@ type AtomContributor struct {
 }
 
 type AtomEntry struct {
+	LanguageSet bool           `xml:"-"` // Emit xml:lang even when Language is empty.
 	XMLBase     string         `xml:"http://www.w3.org/XML/1998/namespace base,attr,omitempty"`
 	Extensions  []Extension    `xml:"-"`
 	XMLName     xml.Name       `xml:"entry"`
@@ -55,7 +56,7 @@ type AtomEntry struct {
 	Source      string `xml:"source,omitempty"`
 	Published   string `xml:"published,omitempty"`
 	Contributor *AtomContributor
-	Links       []AtomLink   // required if no child 'content' elements
+	Links       []AtomLink   `xml:"link,omitempty"` // required if no child 'content' elements
 	Summary     *AtomSummary // required if content has src or content is base64
 	Author      *AtomAuthor  // required if feed lacks an author
 }
@@ -71,6 +72,7 @@ type AtomLink struct {
 }
 
 type AtomFeed struct {
+	LanguageSet bool           `xml:"-"` // Emit xml:lang even when Language is empty.
 	XMLBase     string         `xml:"http://www.w3.org/XML/1998/namespace base,attr,omitempty"`
 	Extensions  []Extension    `xml:"-"`
 	XMLName     xml.Name       `xml:"feed"`
@@ -217,6 +219,9 @@ func (a *Atom) AtomFeed() *AtomFeed {
 		feed.Author = &AtomAuthor{AtomPerson: AtomPerson{Name: a.Author.Name, Email: a.Author.Email}}
 	}
 	for _, e := range a.Items {
+		if e == nil {
+			continue
+		}
 		feed.Entries = append(feed.Entries, newAtomEntry(e))
 	}
 	return feed
@@ -251,6 +256,9 @@ func (a AtomFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if a.Xmlns != "" {
 		start.Name.Space = ""
 	}
+	if a.LanguageSet && a.Language == "" {
+		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: xmlNamespace, Local: "lang"}, Value: ""})
+	}
 	return e.EncodeElement(struct {
 		atomFeed
 		XMLChildren []Extension `xml:",any"`
@@ -266,6 +274,9 @@ func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	extensions, err := decodeExtensions(d, start, &decoded, ns, false)
 	if err != nil {
 		return err
+	}
+	if hasXMLAttribute(start, "lang") {
+		decoded.LanguageSet = true
 	}
 	if extensions != nil {
 		decoded.Extensions = extensions
@@ -305,6 +316,9 @@ func (a AtomEntry) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if a.Xmlns != "" {
 		start.Name.Space = ""
 	}
+	if a.LanguageSet && a.Language == "" {
+		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: xmlNamespace, Local: "lang"}, Value: ""})
+	}
 	return e.EncodeElement(struct {
 		plain
 		XMLChildren []Extension `xml:",any"`
@@ -316,9 +330,13 @@ func (a *AtomEntry) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain AtomEntry
 	value := plain(*a)
 	value.Categories = nil
+	value.Links = nil
 	extensions, err := decodeExtensions(d, start, &value, ns, false)
 	if err != nil {
 		return err
+	}
+	if hasXMLAttribute(start, "lang") {
+		value.LanguageSet = true
 	}
 	if extensions != nil {
 		value.Extensions = extensions
@@ -327,6 +345,9 @@ func (a *AtomEntry) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		value.Category = value.Categories[0].Term
 	} else {
 		value.Categories = a.Categories
+	}
+	if value.Links == nil {
+		value.Links = a.Links
 	}
 	*a = AtomEntry(value)
 	return nil
