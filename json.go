@@ -184,6 +184,9 @@ func (f *JSON) JSONFeed() *JSONFeed {
 		Description: f.Description,
 	}
 
+	if f.Image != nil {
+		feed.Icon = f.Image.Url
+	}
 	if home := homeLink(f.Link, f.Links); home != nil {
 		feed.HomePageUrl = home.Href
 	}

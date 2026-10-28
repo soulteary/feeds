@@ -196,6 +196,9 @@ func (a *Atom) AtomFeed() *AtomFeed {
 		Updated:  updated,
 		Rights:   a.Copyright,
 	}
+	if a.Image != nil {
+		feed.Logo = a.Image.Url
+	}
 	feed.Extensions = a.Extensions
 	feed.Category = a.Category
 	feed.Categories = atomCategoriesFromNames(a.Category, a.Categories)
