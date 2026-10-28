@@ -1,13 +1,14 @@
 /*
-Syndication (feed) generator library for golang.
+Package feeds generates RSS 2.0, Atom, and JSON Feed documents.
 
-Installing
+# Installing
 
 	go get github.com/gorilla/feeds
 
-Feeds provides a simple, generic Feed interface with a generic Item object as well as RSS, Atom and JSON Feed specific RssFeed, AtomFeed and JSONFeed objects which allow access to all of each spec's defined elements.
+Feed and Item provide the shared data model. RssFeed, AtomFeed, and JSONFeed
+expose format-specific fields for callers that need more control.
 
-Examples
+# Examples
 
 Create a Feed and some Items in that feed using the generic interfaces:
 
@@ -16,7 +17,7 @@ Create a Feed and some Items in that feed using the generic interfaces:
 		. "github.com/gorilla/feeds"
 	)
 
-	now = time.Now()
+	now := time.Now()
 
 	feed := &Feed{
 		Title:       "jmoiron.net blog",
