@@ -1,0 +1,48 @@
+
+variant: baseline
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    2673	    445231 ns/op	 1503615 B/op	    6340 allocs/op
+PASS
+
+variant: optimized
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    2374	   1291440 ns/op	  881208 B/op	    3440 allocs/op
+PASS
+
+variant: optimized
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    2217	    529850 ns/op	  881208 B/op	    3440 allocs/op
+PASS
+
+variant: baseline
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    1723	    731061 ns/op	 1503615 B/op	    6340 allocs/op
+PASS
+
+variant: baseline
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    1596	    768650 ns/op	 1503615 B/op	    6340 allocs/op
+PASS
+
+variant: optimized
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkXMLExtensions 	    2035	    503322 ns/op	  881208 B/op	    3440 allocs/op
+PASS

@@ -1,0 +1,26 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/gorilla/feeds
+cpu: Apple M5
+BenchmarkFeedFormats/ToAtom/1000         	      94	   4076150 ns/op	 3701112 B/op	   14047 allocs/op
+BenchmarkFeedFormats/ToAtom/1000         	      85	   4166895 ns/op	 3701112 B/op	   14047 allocs/op
+BenchmarkFeedFormats/ToAtom/1000         	      90	   4650326 ns/op	 3701112 B/op	   14047 allocs/op
+BenchmarkFeedFormats/ToAtom/1000         	      73	   5935482 ns/op	 3701112 B/op	   14047 allocs/op
+BenchmarkFeedFormats/ToAtom/1000         	      64	   5819385 ns/op	 3701112 B/op	   14047 allocs/op
+BenchmarkFeedFormats/ToRSS/1000          	      87	   4136935 ns/op	 3014432 B/op	   15047 allocs/op
+BenchmarkFeedFormats/ToRSS/1000          	      92	   4046513 ns/op	 3014432 B/op	   15047 allocs/op
+BenchmarkFeedFormats/ToRSS/1000          	      94	   4060871 ns/op	 3014432 B/op	   15047 allocs/op
+BenchmarkFeedFormats/ToRSS/1000          	      82	   4137742 ns/op	 3014432 B/op	   15047 allocs/op
+BenchmarkFeedFormats/ToRSS/1000          	      99	   3818792 ns/op	 3014432 B/op	   15047 allocs/op
+BenchmarkFeedFormats/ToJSON/1000         	     168	   1916089 ns/op	 1288811 B/op	    2021 allocs/op
+BenchmarkFeedFormats/ToJSON/1000         	     174	   1910550 ns/op	 1288812 B/op	    2021 allocs/op
+BenchmarkFeedFormats/ToJSON/1000         	     183	   1801830 ns/op	 1288810 B/op	    2021 allocs/op
+BenchmarkFeedFormats/ToJSON/1000         	     195	   1588871 ns/op	 1288812 B/op	    2021 allocs/op
+BenchmarkFeedFormats/ToJSON/1000         	     242	   1543434 ns/op	 1288812 B/op	    2021 allocs/op
+BenchmarkXMLExtensions                   	     457	    859490 ns/op	 1503615 B/op	    6340 allocs/op
+BenchmarkXMLExtensions                   	     344	    990157 ns/op	 1503616 B/op	    6340 allocs/op
+BenchmarkXMLExtensions                   	     376	    932933 ns/op	 1503616 B/op	    6340 allocs/op
+BenchmarkXMLExtensions                   	     390	    820423 ns/op	 1503616 B/op	    6340 allocs/op
+BenchmarkXMLExtensions                   	     445	    946164 ns/op	 1503615 B/op	    6340 allocs/op
+PASS
+ok  	github.com/gorilla/feeds	9.788s

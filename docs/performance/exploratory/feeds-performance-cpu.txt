@@ -1,0 +1,26 @@
+File: feeds.test
+Type: cpu
+Time: 2026-10-28 13:15:14 CST
+Duration: 4.28s, Total samples = 3.02s (70.55%)
+Showing nodes accounting for 2.37s, 78.48% of 3.02s total
+Dropped 81 nodes (cum <= 0.02s)
+Showing top 18 nodes out of 141
+      flat  flat%   sum%        cum   cum%
+     1.74s 57.62% 57.62%      1.74s 57.62%  runtime.kevent
+     0.06s  1.99% 59.60%      0.06s  1.99%  runtime.madvise
+     0.06s  1.99% 61.59%      0.06s  1.99%  runtime.memmove
+     0.05s  1.66% 63.25%      0.06s  1.99%  encoding/xml.(*Decoder).getc
+     0.04s  1.32% 64.57%      0.10s  3.31%  encoding/xml.(*printer).EscapeString
+     0.04s  1.32% 65.89%      0.07s  2.32%  encoding/xml.(*printer).WriteString
+     0.04s  1.32% 67.22%      1.13s 37.42%  encoding/xml.(*printer).marshalValue
+     0.04s  1.32% 68.54%      0.08s  2.65%  runtime.mallocgcSmallScanNoHeaderSC6
+     0.04s  1.32% 69.87%      0.05s  1.66%  runtime.tryDeferToSpanScan
+     0.04s  1.32% 71.19%      0.06s  1.99%  runtime.typePointers.next
+     0.03s  0.99% 72.19%      0.03s  0.99%  encoding/xml.isInCharacterRange (inline)
+     0.03s  0.99% 73.18%      0.05s  1.66%  gcWriteBarrier
+     0.03s  0.99% 74.17%      0.07s  2.32%  runtime.(*sweepLocked).sweep
+     0.03s  0.99% 75.17%      0.03s  0.99%  runtime.memclrNoHeapPointers
+     0.03s  0.99% 76.16%      0.03s  0.99%  runtime.rand
+     0.03s  0.99% 77.15%      0.03s  0.99%  runtime.spanOf (inline)
+     0.02s  0.66% 77.81%      0.02s  0.66%  bufio.(*Writer).WriteByte
+     0.02s  0.66% 78.48%      0.04s  1.32%  encoding/xml.isName
