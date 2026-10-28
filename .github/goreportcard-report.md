@@ -22,22 +22,21 @@
 
 ### gocyclo
 
-- `xml_base_test.go`
-  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
+- `extensions_test.go`
+  - Line 22: cyclomatic complexity 18 for function TestExtensionsGenericMappings
+- `itunes_test.go`
+  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
+- `atom_guid_regression_test.go`
+  - Line 11: cyclomatic complexity 27 for function TestConvertedAtomIdentifierRSSGUID
 - `links_test.go`
   - Line 13: cyclomatic complexity 26 for function TestFeedMultipleLinksByFormat
   - Line 128: cyclomatic complexity 21 for function TestAtomMultipleLinkRoundtrip
 - `atom.go`
   - Line 101: cyclomatic complexity 20 for function newAtomEntry
-- `extensions.go`
-  - Line 60: cyclomatic complexity 19 for function (Extension).MarshalXML
-  - Line 175: cyclomatic complexity 18 for function (*extensionTokenReader).Token
-  - Line 239: cyclomatic complexity 17 for function encodeExtensionContent
-  - Line 30: cyclomatic complexity 16 for function validExtensionName
-- `extensions_test.go`
-  - Line 22: cyclomatic complexity 18 for function TestExtensionsGenericMappings
-- `image_mapping_test.go`
-  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
+- `language_test.go`
+  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
+- `xml_base_test.go`
+  - Line 12: cyclomatic complexity 30 for function TestXMLBaseMappings
 - `categories_test.go`
   - Line 12: cyclomatic complexity 23 for function TestGenericCategoryMappings
 - `json_regression_test.go`
@@ -50,15 +49,16 @@
   - Line 58: cyclomatic complexity 43 for function TestRSSToFeed
   - Line 11: cyclomatic complexity 38 for function TestAtomToFeed
   - Line 164: cyclomatic complexity 17 for function TestConversionTextAndTimeSemantics
-- `language_test.go`
-  - Line 12: cyclomatic complexity 34 for function TestLanguageMappings
-- `itunes_test.go`
-  - Line 32: cyclomatic complexity 33 for function TestITunesPodcastRSSMapping
+- `image_mapping_test.go`
+  - Line 13: cyclomatic complexity 30 for function TestFeedImageMappings
 - `roundtrip_fixes_test.go`
   - Line 47: cyclomatic complexity 22 for function TestRSSContentAndSourceRoundtrip
   - Line 132: cyclomatic complexity 20 for function TestNilItemsAreSkippedWithoutMutation
-- `atom_guid_regression_test.go`
-  - Line 11: cyclomatic complexity 27 for function TestConvertedAtomIdentifierRSSGUID
+- `extensions.go`
+  - Line 60: cyclomatic complexity 19 for function (Extension).MarshalXML
+  - Line 175: cyclomatic complexity 18 for function (*extensionTokenReader).Token
+  - Line 239: cyclomatic complexity 17 for function encodeExtensionContent
+  - Line 30: cyclomatic complexity 16 for function validExtensionName
 - `review_namespace_test.go`
   - Line 10: cyclomatic complexity 18 for function TestRSSContentPrefixBinding
 
