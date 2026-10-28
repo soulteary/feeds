@@ -8,23 +8,32 @@ import (
 	"time"
 )
 
+// Link describes a primary or additional link, including its relation, media
+// type, and optional enclosure length.
 type Link struct {
 	Href, Rel, Type, Length string
 }
 
+// Author identifies the author of a feed or item.
 type Author struct {
 	Name, Email string
 }
 
+// Image describes a feed image. RSS uses all fields; Atom logo and JSON Feed
+// icon use Url.
 type Image struct {
 	Url, Title, Link string
 	Width, Height    int
 }
 
+// Enclosure describes a related media resource, with a URL, byte length, and
+// MIME type.
 type Enclosure struct {
 	Url, Length, Type string
 }
 
+// Item represents one entry in a feed. Format-specific conversion methods map
+// its shared metadata to RSS, Atom, and JSON Feed.
 type Item struct {
 	XMLBase     string      `json:"-"` // Optional XML base URI for the entry/item.
 	ITunes      *ITunesItem `json:"-"` // Optional RSS-only podcast episode metadata.
@@ -46,6 +55,7 @@ type Item struct {
 	Extensions  []Extension `json:"-"` // Foreign XML children for RSS and Atom.
 }
 
+// Feed represents shared syndication metadata and an ordered collection of items.
 type Feed struct {
 	XMLBase     string      `json:"-"` // Optional XML base URI for the feed/channel.
 	ITunes      *ITunesFeed `json:"-"` // Optional RSS-only podcast show metadata.
@@ -67,12 +77,12 @@ type Feed struct {
 	Extensions  []Extension `json:"-"` // Foreign XML children for RSS and Atom.
 }
 
-// add a new Item to a Feed
+// Add appends item to the feed without copying it.
 func (f *Feed) Add(item *Item) {
 	f.Items = append(f.Items, item)
 }
 
-// returns the first non-zero time formatted as a string or ""
+// anyTimeFormat returns the first nonzero time in the requested format, or "".
 func anyTimeFormat(format string, times ...time.Time) string {
 	for _, t := range times {
 		if !t.IsZero() {
@@ -82,13 +92,14 @@ func anyTimeFormat(format string, times ...time.Time) string {
 	return ""
 }
 
-// interface used by ToXML to get a object suitable for exporting XML.
+// XmlFeed supplies the XML-ready representation used by ToXML and WriteXML.
+// It is implemented by the RSS and Atom conversion and low-level models.
 type XmlFeed interface {
 	FeedXml() interface{}
 }
 
-// turn a feed object (either a Feed, AtomFeed, or RssFeed) into xml
-// returns an error if xml marshaling fails
+// ToXML returns the indented XML representation of feed, preceded by the XML
+// declaration. It returns an error if XML marshaling fails.
 func ToXML(feed XmlFeed) (string, error) {
 	x := feed.FeedXml()
 	data, err := xml.MarshalIndent(x, "", "  ")
@@ -100,8 +111,9 @@ func ToXML(feed XmlFeed) (string, error) {
 	return s, nil
 }
 
-// WriteXML writes a feed object (either a Feed, AtomFeed, or RssFeed) as XML into
-// the writer. Returns an error if XML marshaling fails.
+// WriteXML writes the XML declaration and indented representation of feed to w.
+// It returns the first error from the writer or XML encoder; partial output may
+// have been written when an error is returned.
 func WriteXML(feed XmlFeed, w io.Writer) error {
 	x := feed.FeedXml()
 	// write default xml header, without the newline
@@ -113,7 +125,7 @@ func WriteXML(feed XmlFeed, w io.Writer) error {
 	return e.Encode(x)
 }
 
-// creates an Atom representation of this feed
+// ToAtom returns the feed as Atom XML, including the XML declaration.
 func (f *Feed) ToAtom() (string, error) {
 	a := &Atom{f}
 	return ToXML(a)
@@ -124,7 +136,7 @@ func (f *Feed) WriteAtom(w io.Writer) error {
 	return WriteXML(&Atom{f}, w)
 }
 
-// creates an Rss representation of this feed
+// ToRss returns the feed as RSS 2.0 XML, including the XML declaration.
 func (f *Feed) ToRss() (string, error) {
 	r := &Rss{f}
 	return ToXML(r)
@@ -135,13 +147,14 @@ func (f *Feed) WriteRss(w io.Writer) error {
 	return WriteXML(&Rss{f}, w)
 }
 
-// ToJSON creates a JSON Feed representation of this feed
+// ToJSON returns the feed as indented JSON Feed 1.1.
 func (f *Feed) ToJSON() (string, error) {
 	j := &JSON{f}
 	return j.ToJSON()
 }
 
-// WriteJSON writes an JSON representation of this feed to the writer.
+// WriteJSON writes indented JSON Feed 1.1 to w, followed by a newline.
+// It returns errors from JSON encoding or the writer.
 func (f *Feed) WriteJSON(w io.Writer) error {
 	j := &JSON{f}
 	feed := j.JSONFeed()
@@ -151,7 +164,8 @@ func (f *Feed) WriteJSON(w io.Writer) error {
 	return e.Encode(feed)
 }
 
-// Sort sorts the Items in the feed with the given less function.
+// Sort stably sorts the feed's Items in place using less.
+// Items that compare equal retain their original order.
 func (f *Feed) Sort(less func(a, b *Item) bool) {
 	lessFunc := func(i, j int) bool {
 		return less(f.Items[i], f.Items[j])
