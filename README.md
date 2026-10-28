@@ -46,6 +46,58 @@ to `Feed.Link.Href` only when `Id` is empty. Entry `published` is populated from
 continues to prefer `Item.Updated`, falling back to `Item.Created`. Item IDs,
 feed links, and RSS/JSON conversion are unaffected by these Atom mappings.
 
+### Home pages, subscription URLs, and additional links
+
+Keep using `Feed.Link` / `Item.Link` for the primary page link. `Feed.Links` /
+`Item.Links` add links without replacing that field. For example:
+
+```go
+feed := &feeds.Feed{
+    Link: &feeds.Link{Href: "https://example.com/"},
+    Links: []*feeds.Link{
+        {Href: "https://example.com/atom.xml", Rel: "self", Type: "application/atom+xml"},
+        {Href: "https://example.com/rss.xml", Rel: "self", Type: "application/rss+xml"},
+        {Href: "https://example.com/feed.json", Rel: "self", Type: "application/feed+json"},
+        {Href: "https://example.com/hub", Rel: "hub"},
+    },
+}
+```
+
+- A primary link with an empty `Rel` or `Rel: "alternate"` remains the home page
+  (or item permalink). If absent, the first additional alternate/unspecified
+  relation with no type or an HTML/XHTML type supplies the page URL.
+- A subscription URL must be explicit: `Rel: "self"`. Each format prefers the
+  self link matching its media type, then an untyped self link. Self links for
+  other formats are not reused. An untyped self URL opts into use by all formats;
+  use format-specific types when the endpoints differ. Generated Atom/RSS self
+  links without a type receive the current format's media type.
+- Atom emits the primary link followed by additional links, including their
+  relation, type, and length. RSS keeps its home page in the channel `link` and
+  emits self/hub links in the Atom namespace. JSON maps the page and subscription
+  URLs to `home_page_url` and `feed_url` separately. A primary `Link` explicitly
+  marked self/hub/enclosure is no longer treated as a home page in RSS/JSON.
+- Nil links, empty URLs, and duplicate additional links are skipped. Duplicate
+  comparison treats an empty relation as alternate and otherwise compares all
+  link fields. Different media types or relations are retained. Only one self
+  link is selected per feed format; the first equally specific candidate wins.
+- The existing low-level `AtomFeed.Link` remains the first link. Its new `Links`
+  field contains additional links. XML decoding stores the first link in `Link`
+  and the remainder in `Links`; encoding writes both. Explicitly decoded links
+  replace the previous link collection; missing links preserve it. `RssFeed`
+  exposes namespaced links as `AtomLinks` separately from its page `Link`.
+- Existing page-only feeds using a plain `Link{Href: ...}` keep their previous
+  serialized output. Configured link type/length attributes are now preserved. No self link
+  is guessed from a home page; callers must supply the actual subscription URL.
+  Feed IDs retain the existing explicit-ID / primary-link fallback; when neither
+  supplies an ID, an additional home page or Atom self URL can supply it.
+
+No field is removed or changes type. Adding exported fields can still require
+updates to positional (unkeyed) `Feed`, `Item`, `AtomFeed`, or `RssFeed` struct
+literals; keyed struct literals remain compatible. No third-party dependency is
+needed for link handling.
+
+### Complete example
+
 ```go
 package main
 

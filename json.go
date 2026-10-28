@@ -182,8 +182,11 @@ func (f *JSON) JSONFeed() *JSONFeed {
 		Description: f.Description,
 	}
 
-	if f.Link != nil {
-		feed.HomePageUrl = f.Link.Href
+	if home := homeLink(f.Link, f.Links); home != nil {
+		feed.HomePageUrl = home.Href
+	}
+	if self := selfLink(f.Link, f.Links, "application/feed+json"); self != nil {
+		feed.FeedUrl = self.Href
 	}
 	if f.Author != nil {
 		author := &JSONAuthor{
@@ -207,8 +210,8 @@ func newJSONItem(i *Item) *JSONItem {
 		ContentHTML: i.Content,
 	}
 
-	if i.Link != nil {
-		item.Url = i.Link.Href
+	if home := homeLink(i.Link, i.Links); home != nil {
+		item.Url = home.Href
 	}
 	if i.Source != nil {
 		item.ExternalUrl = i.Source.Href

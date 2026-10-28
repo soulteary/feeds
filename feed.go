@@ -37,6 +37,7 @@ type Item struct {
 	Created     time.Time
 	Enclosure   *Enclosure
 	Content     string
+	Links       []*Link // Additional links; Link remains the primary link.
 }
 
 type Feed struct {
@@ -51,6 +52,7 @@ type Feed struct {
 	Items       []*Item
 	Copyright   string
 	Image       *Image
+	Links       []*Link // Additional links, including explicit rel=self subscription URLs.
 }
 
 // add a new Item to a Feed
