@@ -3,7 +3,7 @@ Package feeds generates RSS 2.0, Atom, and JSON Feed documents.
 
 # Installing
 
-	go get github.com/gorilla/feeds
+	go get github.com/soulteary/feeds
 
 Feed and Item provide the shared data model. RssFeed, AtomFeed, and JSONFeed
 expose format-specific fields for callers that need more control.
@@ -14,7 +14,7 @@ Create a Feed and some Items in that feed using the generic interfaces:
 
 	import (
 		"time"
-		. "github.com/gorilla/feeds"
+		. "github.com/soulteary/feeds"
 	)
 
 	now := time.Now()
@@ -66,7 +66,7 @@ From here, you can modify or add each syndication's specific fields before outpu
 
 	atomFeed.Subtitle = "plays the blues"
 	atom, err := ToXML(atomFeed)
-	rssFeed.Generator = "gorilla/feeds v1.0 (github.com/gorilla/feeds)"
+	rssFeed.Generator = "soulteary/feeds v1.3.0 (github.com/soulteary/feeds)"
 	rss, err := ToXML(rssFeed)
 	jsonFeed.NextUrl = "https://www.example.com/feed.json?page=2"
 	json, err := jsonFeed.ToJSON()

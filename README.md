@@ -1,7 +1,16 @@
 # soulteary/feeds
 
 Independently maintained fork of [gorilla/feeds](https://github.com/gorilla/feeds).
-The existing module path `github.com/gorilla/feeds` and Go 1.20 minimum are retained.
+Starting with v1.3.0, this fork publishes the Go module `github.com/soulteary/feeds`.
+Go 1.20 remains the minimum supported version.
+
+```sh
+go get github.com/soulteary/feeds@v1.3.0
+```
+
+To adopt this fork, change imports from `github.com/gorilla/feeds` to
+`github.com/soulteary/feeds`. Existing Go API names remain available; see the
+conversion and wire-format notes below for intentional behavior corrections.
 
 [![Go Test Coverage](./.github/coverage.svg)](./.github/go-test-report.md)
 [![Go Report Card](./.github/goreportcard.svg)](./.github/goreportcard-report.md)
@@ -400,7 +409,7 @@ import (
     "fmt"
     "log"
     "time"
-    "github.com/gorilla/feeds"
+    "github.com/soulteary/feeds"
 )
 
 func main() {

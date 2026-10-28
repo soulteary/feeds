@@ -1,3 +1,3 @@
-module github.com/gorilla/feeds
+module github.com/soulteary/feeds
 
 go 1.20
