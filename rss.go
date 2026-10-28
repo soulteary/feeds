@@ -14,6 +14,7 @@ import (
 
 // private wrapper around the RssFeed which gives us the <rss>..</rss> xml
 type RssFeedXml struct {
+	XMLBase          string   `xml:"http://www.w3.org/XML/1998/namespace base,attr,omitempty"`
 	XMLName          xml.Name `xml:"rss"`
 	Version          string   `xml:"version,attr"`
 	ContentNamespace string   `xml:"xmlns:content,attr"`
@@ -44,6 +45,7 @@ type RssTextInput struct {
 }
 
 type RssFeed struct {
+	XMLBase        string        `xml:"http://www.w3.org/XML/1998/namespace base,attr,omitempty"`
 	ITunes         *ITunesFeed   `xml:"-"`
 	Extensions     []Extension   `xml:"-"`
 	XMLName        xml.Name      `xml:"channel"`
@@ -72,6 +74,7 @@ type RssFeed struct {
 }
 
 type RssItem struct {
+	XMLBase     string      `xml:"http://www.w3.org/XML/1998/namespace base,attr,omitempty"`
 	ITunes      *ITunesItem `xml:"-"`
 	Extensions  []Extension `xml:"-"`
 	XMLName     xml.Name    `xml:"item"`
@@ -112,6 +115,7 @@ type Rss struct {
 func newRssItem(i *Item) *RssItem {
 	item := &RssItem{
 		Title:       i.Title,
+		XMLBase:     i.XMLBase,
 		Description: i.Description,
 		PubDate:     anyTimeFormat(time.RFC1123Z, i.Created, i.Updated),
 	}
@@ -161,6 +165,7 @@ func (r *Rss) RssFeed() *RssFeed {
 	}
 	channel := &RssFeed{
 		Title:          r.Title,
+		XMLBase:        r.XMLBase,
 		Language:       r.Language,
 		Link:           href,
 		Description:    r.Description,
@@ -336,7 +341,7 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return nil
 }
 
-// UnmarshalXML retains the optional root iTunes namespace declaration.
+// UnmarshalXML retains the modeled root namespace declarations.
 func (r *RssFeedXml) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain RssFeedXml
 	value := plain(*r)
@@ -344,10 +349,24 @@ func (r *RssFeedXml) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 		return err
 	}
 	for _, attr := range start.Attr {
-		if attr.Name.Space == "xmlns" && attr.Name.Local == "itunes" {
-			value.ITunesNamespace = attr.Value
+		if attr.Name.Space == "xmlns" {
+			switch attr.Name.Local {
+			case "itunes":
+				value.ITunesNamespace = attr.Value
+			case "content":
+				value.ContentNamespace = attr.Value
+			}
 		}
 	}
 	*r = RssFeedXml(value)
 	return nil
+}
+
+// FeedXml returns the complete RSS document, retaining root attributes.
+func (r *RssFeedXml) FeedXml() interface{} {
+	copy := *r
+	if copy.ContentNamespace == "" {
+		copy.ContentNamespace = "http://purl.org/rss/1.0/modules/content/"
+	}
+	return &copy
 }

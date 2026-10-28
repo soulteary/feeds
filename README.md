@@ -280,6 +280,42 @@ feed. This is serialization support, not an Apple submission validator. See
 [Apple's RSS guide](https://help.apple.com/itc/podcasts_connect/en.lproj/itcb54353390.html)
 and [technical requirements](https://podcasters.apple.com/support/823-podcast-requirements).
 
+### XML base URIs
+
+Set `Feed.XMLBase` and `Item.XMLBase` to declare optional XML base URI references:
+
+```go
+feed.XMLBase = "https://example.com/show/"
+feed.Items[0].XMLBase = "episodes/"
+```
+
+RSS places the feed value on `channel` and the item value on `item`; Atom places
+these on `feed` and `entry`. Attributes use `xml:base` in the reserved
+`http://www.w3.org/XML/1998/namespace` namespace, not an unqualified `base`
+attribute or a custom namespace. Empty values are omitted. Descendants with no
+explicit base use the inherited XML context; the Go fields remain unset rather
+than receiving copied defaults. Empty `xml:base` is not a document-base reset.
+
+The low-level `AtomFeed`, `AtomEntry`, `RssFeed`, `RssItem`, and `RssFeedXml`
+models also expose `XMLBase`. The RSS wrapper field declares a document-level
+base, independently of channel/item values. Preserve that wrapper and use
+`ToXML(&rssDocument)` / `WriteXML(&rssDocument, writer)` when retaining root
+context after decoding; encoding only `rssDocument.Channel` intentionally
+rewraps just the channel and cannot retain a discarded root context. Modeled
+content/iTunes namespace declarations are retained by wrapper decoding.
+
+Absolute and relative values, Unicode, and URI-reference spelling are preserved
+with normal XML escaping; links, IDs, enclosure URLs, and nested content are not
+resolved, normalized, or rewritten. Reading fields does not compute an effective
+base URI. Existing extension attributes can express `xml:base` on nested custom
+elements. URI validation and resolution remain caller/consumer responsibilities;
+see [XML Base](https://www.w3.org/TR/xmlbase/).
+
+JSON Feed has no `xml:base` counterpart, so the new fields do not affect JSON
+output. Unset bases keep existing XML output unchanged, with no new dependencies
+or existing-field type changes. As with other additive fields, positional struct
+literals for affected types may need updating.
+
 ### Complete example
 
 ```go

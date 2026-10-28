@@ -11,7 +11,7 @@ import (
 var testRssFeedXML = RssFeedXml{
 	XMLName:          xml.Name{Space: "", Local: "rss"},
 	Version:          "2.0",
-	ContentNamespace: "",
+	ContentNamespace: "http://purl.org/rss/1.0/modules/content/",
 	Channel: &RssFeed{
 		XMLName:        xml.Name{Space: "", Local: "channel"},
 		Title:          "Lorem ipsum feed for an interval of 1 minutes",
