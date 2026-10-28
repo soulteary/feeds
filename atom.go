@@ -67,17 +67,18 @@ type AtomLink struct {
 }
 
 type AtomFeed struct {
-	XMLName     xml.Name `xml:"feed"`
-	Xmlns       string   `xml:"xmlns,attr"`
-	Title       string   `xml:"title"`   // required
-	Id          string   `xml:"id"`      // required
-	Updated     string   `xml:"updated"` // required
-	Category    string   `xml:"category,omitempty"`
-	Icon        string   `xml:"icon,omitempty"`
-	Logo        string   `xml:"logo,omitempty"`
-	Rights      string   `xml:"rights,omitempty"` // copyright used
-	Subtitle    string   `xml:"subtitle,omitempty"`
-	Link        *AtomLink
+	XMLName     xml.Name    `xml:"feed"`
+	Xmlns       string      `xml:"xmlns,attr"`
+	Title       string      `xml:"title"`   // required
+	Id          string      `xml:"id"`      // required
+	Updated     string      `xml:"updated"` // required
+	Category    string      `xml:"category,omitempty"`
+	Icon        string      `xml:"icon,omitempty"`
+	Logo        string      `xml:"logo,omitempty"`
+	Rights      string      `xml:"rights,omitempty"` // copyright used
+	Subtitle    string      `xml:"subtitle,omitempty"`
+	Link        *AtomLink   `xml:"-"`              // First link, retained for compatibility.
+	Links       []AtomLink  `xml:"link,omitempty"` // Additional links.
 	Author      *AtomAuthor `xml:"author,omitempty"`
 	Contributor *AtomContributor
 	Entries     []*AtomEntry `xml:"entry"`
@@ -90,6 +91,9 @@ type Atom struct {
 func newAtomEntry(i *Item) *AtomEntry {
 	id := i.Id
 	link := i.Link
+	if link == nil {
+		link = homeLink(nil, i.Links)
+	}
 	if link == nil {
 		link = &Link{}
 	}
@@ -123,6 +127,10 @@ func newAtomEntry(i *Item) *AtomEntry {
 		Published: anyTimeFormat(time.RFC3339, i.Created),
 	}
 
+	if (i.Link != nil && i.Link.Href != "") || len(i.Links) > 0 {
+		x.Links = atomLinks(i.Link, i.Links, "")
+	}
+
 	// if there's a description, assume it's html
 	if len(i.Description) > 0 {
 		x.Summary = &AtomSummary{Content: i.Description, Type: "html"}
@@ -133,7 +141,7 @@ func newAtomEntry(i *Item) *AtomEntry {
 		x.Content = &AtomContent{Content: i.Content, Type: "html"}
 	}
 
-	if i.Enclosure != nil && link_rel != "enclosure" {
+	if i.Enclosure != nil && !hasEnclosure(x.Links, i.Enclosure.Url) {
 		x.Links = append(x.Links, AtomLink{Href: i.Enclosure.Url, Rel: "enclosure", Type: i.Enclosure.Type, Length: i.Enclosure.Length})
 	}
 
@@ -154,6 +162,13 @@ func (a *Atom) AtomFeed() *AtomFeed {
 	if id == "" {
 		id = link.Href
 	}
+	if id == "" {
+		if home := homeLink(a.Link, a.Links); home != nil {
+			id = home.Href
+		} else if self := selfLink(a.Link, a.Links, "application/atom+xml"); self != nil {
+			id = self.Href
+		}
+	}
 	feed := &AtomFeed{
 		Xmlns:    ns,
 		Title:    a.Title,
@@ -162,6 +177,14 @@ func (a *Atom) AtomFeed() *AtomFeed {
 		Id:       id,
 		Updated:  updated,
 		Rights:   a.Copyright,
+	}
+	if (a.Link != nil && a.Link.Href != "") || len(a.Links) > 0 {
+		feed.Link = nil
+		links := atomLinks(a.Link, a.Links, "application/atom+xml")
+		if len(links) > 0 {
+			feed.Link = &links[0]
+			feed.Links = links[1:]
+		}
 	}
 	if a.Author != nil {
 		feed.Author = &AtomAuthor{AtomPerson: AtomPerson{Name: a.Author.Name, Email: a.Author.Email}}
@@ -180,4 +203,45 @@ func (a *Atom) FeedXml() interface{} {
 // FeedXml returns an XML-ready object for an AtomFeed object
 func (a *AtomFeed) FeedXml() interface{} {
 	return a
+}
+
+// MarshalXML writes Link followed by Links without changing the source feed.
+func (a AtomFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type atomFeed AtomFeed
+	copy := atomFeed(a)
+	copy.Links = append([]AtomLink(nil), a.Links...)
+	if a.Link != nil {
+		copy.Links = append([]AtomLink{*a.Link}, copy.Links...)
+	}
+	start.Name = a.XMLName
+	if start.Name.Local == "" {
+		start.Name.Local = "feed"
+	}
+	if a.Xmlns != "" {
+		start.Name.Space = ""
+	}
+	return e.EncodeElement(copy, start)
+}
+
+// UnmarshalXML keeps the first link in Link and subsequent links in Links.
+func (a *AtomFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type atomFeed AtomFeed
+	decoded := atomFeed(*a)
+	decoded.Links = nil
+	if err := d.DecodeElement(&decoded, &start); err != nil {
+		return err
+	}
+	if len(decoded.Links) == 0 {
+		decoded.Links = a.Links
+	} else {
+		first := decoded.Links[0]
+		decoded.Link = &first
+		if len(decoded.Links) > 1 {
+			decoded.Links = decoded.Links[1:]
+		} else {
+			decoded.Links = nil
+		}
+	}
+	*a = AtomFeed(decoded)
+	return nil
 }
