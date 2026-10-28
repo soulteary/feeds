@@ -17,6 +17,7 @@ type RssFeedXml struct {
 	XMLName          xml.Name `xml:"rss"`
 	Version          string   `xml:"version,attr"`
 	ContentNamespace string   `xml:"xmlns:content,attr"`
+	ITunesNamespace  string   `xml:"xmlns:itunes,attr,omitempty"`
 	Channel          *RssFeed
 }
 
@@ -43,6 +44,7 @@ type RssTextInput struct {
 }
 
 type RssFeed struct {
+	ITunes         *ITunesFeed   `xml:"-"`
 	Extensions     []Extension   `xml:"-"`
 	XMLName        xml.Name      `xml:"channel"`
 	Title          string        `xml:"title"` // required
@@ -70,6 +72,7 @@ type RssFeed struct {
 }
 
 type RssItem struct {
+	ITunes      *ITunesItem `xml:"-"`
 	Extensions  []Extension `xml:"-"`
 	XMLName     xml.Name    `xml:"item"`
 	Title       string      `xml:"title"`       // required
@@ -130,6 +133,7 @@ func newRssItem(i *Item) *RssItem {
 		item.Enclosure = &RssEnclosure{Url: i.Enclosure.Url, Type: i.Enclosure.Type, Length: i.Enclosure.Length}
 	}
 
+	item.ITunes = i.ITunes
 	item.Extensions = i.Extensions
 	item.Category = i.Category
 	item.Categories = categoryNames(i.Category, i.Categories)
@@ -166,6 +170,7 @@ func (r *Rss) RssFeed() *RssFeed {
 		Copyright:      r.Copyright,
 		Image:          image,
 	}
+	channel.ITunes = r.ITunes
 	channel.Extensions = r.Extensions
 	channel.Category = r.Category
 	channel.Categories = categoryNames(r.Category, r.Categories)
@@ -219,7 +224,17 @@ func (r *Rss) FeedXml() interface{} {
 
 // FeedXml returns an XML-ready object for an RssFeed object
 func (r *RssFeed) FeedXml() interface{} {
+	itunesNamespace := ""
+	if hasITunesExtensions(r.Extensions) || len(r.ITunes.Extensions()) > 0 {
+		itunesNamespace = ITunesNamespace
+	}
+	for _, item := range r.Items {
+		if item != nil && (hasITunesExtensions(item.Extensions) || len(item.ITunes.Extensions()) > 0) {
+			itunesNamespace = ITunesNamespace
+		}
+	}
 	return &RssFeedXml{
+		ITunesNamespace:  itunesNamespace,
 		Version:          "2.0",
 		Channel:          r,
 		ContentNamespace: "http://purl.org/rss/1.0/modules/content/",
@@ -237,6 +252,7 @@ type RssAtomLink struct {
 
 // MarshalXML combines the legacy Category with Categories without mutation.
 func (r RssFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	r.Extensions = mergeITunesExtensions(r.Extensions, r.ITunes.Extensions())
 	if err := validateExtensions(r.Extensions, ""); err != nil {
 		return err
 	}
@@ -264,6 +280,9 @@ func (r *RssFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	}
 	if extensions != nil {
 		value.Extensions = extensions
+		if hasITunesExtensions(extensions) {
+			value.ITunes = nil
+		}
 	}
 	if len(value.Categories) > 0 {
 		value.Category = value.Categories[0]
@@ -276,6 +295,7 @@ func (r *RssFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // MarshalXML combines the legacy Category with Categories without mutation.
 func (r RssItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	r.Extensions = mergeITunesExtensions(r.Extensions, r.ITunes.Extensions())
 	if err := validateExtensions(r.Extensions, ""); err != nil {
 		return err
 	}
@@ -303,6 +323,9 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	}
 	if extensions != nil {
 		value.Extensions = extensions
+		if hasITunesExtensions(extensions) {
+			value.ITunes = nil
+		}
 	}
 	if len(value.Categories) > 0 {
 		value.Category = value.Categories[0]
@@ -310,5 +333,21 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		value.Categories = r.Categories
 	}
 	*r = RssItem(value)
+	return nil
+}
+
+// UnmarshalXML retains the optional root iTunes namespace declaration.
+func (r *RssFeedXml) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type plain RssFeedXml
+	value := plain(*r)
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+	for _, attr := range start.Attr {
+		if attr.Name.Space == "xmlns" && attr.Name.Local == "itunes" {
+			value.ITunesNamespace = attr.Value
+		}
+	}
+	*r = RssFeedXml(value)
 	return nil
 }

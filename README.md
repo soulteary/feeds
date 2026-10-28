@@ -213,6 +213,73 @@ No existing field is removed or changes type, no dependency is added, and
 extension-free output stays unchanged. Additive fields may require updates to
 positional struct literals; keyed literals remain compatible.
 
+### iTunes / Apple Podcasts RSS metadata
+
+Set optional `Feed.ITunes` / `Item.ITunes` pointers, or their low-level
+`RssFeed.ITunes` / `RssItem.ITunes` equivalents. These fields affect RSS only and
+convert to the existing XML extension model; Atom and JSON remain unchanged.
+
+```go
+clean := false
+feed.Language = "en-US"
+feed.ITunes = &feeds.ITunesFeed{
+    Author: "Example Network",
+    Image: &feeds.ITunesImage{Href: "https://example.com/show.jpg"},
+    Explicit: &clean,
+    Type: feeds.ITunesFeedTypeSerial,
+    Categories: []feeds.ITunesCategory{{
+        Text: "Society & Culture",
+        Categories: []feeds.ITunesCategory{{Text: "Documentary"}},
+    }},
+}
+feed.Items[0].ITunes = &feeds.ITunesItem{
+    Duration: "90",
+    Episode: 1,
+    Season: 1,
+    EpisodeType: feeds.ITunesEpisodeTypeFull,
+    Explicit: &clean,
+}
+```
+
+Show metadata supports title, author, image, nested categories, explicit rating,
+show type, owner, new-feed-url, block, complete, and applepodcastsverify. Episode
+metadata supports title, author, image, explicit rating, duration, episode/season,
+episode type, and block. Legacy subtitle, summary, keywords, order, and
+isClosedCaptioned are available for readers that still consume them.
+
+`Explicit` is a `*bool`: nil omits the tag, while false emits `false`. Block and
+complete emit `Yes` only when true. `IsClosedCaptioned` uses optional Yes/No.
+Episode/season/order zero values are omitted. `Duration` is a string: use integer
+seconds (including explicit `"0"`) or a supported clock format such as
+`"00:01:30"`, not Go duration strings like `"1m30s"`. Constants use lowercase
+`episodic`/`serial` and `full`/`trailer`/`bonus`.
+
+The RSS wrapper includes `xmlns:itunes` only when typed or raw iTunes elements
+are present, including item-only metadata. Generated elements use the conventional
+`itunes` prefix with the exact `ITunesNamespace` URI. The extension model's new
+optional `Prefix` hint adds scoped declarations; it does not change expanded-name
+semantics and is not retained on decoding. All values still use normal XML
+escaping. Custom attributes retain independent namespaces even when their natural
+prefix would clash with the element hint.
+
+`ITunesFeed.Extensions()` / `ITunesItem.Extensions()` also expose the generated
+extension elements. Typed fields replace raw extensions with matching expanded
+names only when the typed field emits an element; unknown extensions and omitted
+typed fields retain raw values. Parsing retains iTunes data in `Extensions`
+rather than populating typed structs. On a reused RSS object, newly decoded
+iTunes extensions clear any stale typed pointer so it cannot override the input.
+Subsequent RSS encoding preserves the decoded metadata and root namespace.
+
+Empty pointers/metadata do not change the default output or add dependencies.
+Existing fields retain their names/types; additive fields can affect positional
+struct literals. No metadata is inferred from existing author/image/category
+fields or inherited from the show into an episode. Callers remain responsible
+for category spelling, supported values, positive episode/season numbers, stable
+GUIDs, valid enclosures, artwork/hosting requirements, and the complete podcast
+feed. This is serialization support, not an Apple submission validator. See
+[Apple's RSS guide](https://help.apple.com/itc/podcasts_connect/en.lproj/itcb54353390.html)
+and [technical requirements](https://podcasters.apple.com/support/823-podcast-requirements).
+
 ### Complete example
 
 ```go
