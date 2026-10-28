@@ -96,6 +96,48 @@ updates to positional (unkeyed) `Feed`, `Item`, `AtomFeed`, or `RssFeed` struct
 literals; keyed struct literals remain compatible. No third-party dependency is
 needed for link handling.
 
+### Categories
+
+`Feed` and `Item` expose `Category string` and `Categories []string`. The singular
+category is placed first, followed by nonempty, distinct values from the plural
+field in input order. Comparison is exact and case-sensitive; nonempty terms
+(including Unicode and whitespace) are not rewritten.
+
+```go
+feed.Category = "Technology"
+feed.Categories = []string{"Go", "RSS"}
+feed.Items = []*feeds.Item{{
+    Id: "urn:post:1",
+    Category: "Go",
+    Categories: []string{"Tutorial", "Go"},
+}}
+```
+
+RSS emits repeated `category` elements on channels/items. Atom emits repeated
+`category` elements with a `term` attribute on feeds/entries. JSON Feed maps
+**item** categories to `tags`; the specification has no feed-level category
+field, so feed categories are not emitted there or inherited by items.
+
+Existing `RssFeed.Category`, `RssItem.Category`, `AtomFeed.Category`, and
+`AtomEntry.Category` fields retain their string types. Their new `Categories`
+fields hold the complete collection (`[]string` for RSS, `[]AtomCategory` for
+Atom). XML decoding retains all categories and mirrors the first in `Category`.
+On output, `Category` is merged first without duplicating the collection's
+matching category. Missing category elements preserve existing values on reused
+objects; explicit elements replace the old collection.
+
+Use `AtomCategory{Term: "Go", Scheme: "https://example.com/topics", Label: "Go"}`
+when scheme or label metadata is needed. Categories with the same term but
+different metadata are retained. If legacy `Category` matches a rich category,
+its metadata is preserved rather than adding a duplicate bare term. Legacy Atom
+text-only category input is accepted, but output always uses the standard `term`
+attribute, including when only the existing `Category` field is set. RSS's
+existing single-category output is unchanged. No-category output is unchanged
+for all formats, and formatting does not mutate source categories.
+
+The new fields are additive; positional struct literals for the affected public
+structs may need updates. Keyed literals using the existing fields remain valid.
+
 ### Complete example
 
 ```go

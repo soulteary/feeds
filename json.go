@@ -208,6 +208,7 @@ func newJSONItem(i *Item) *JSONItem {
 		Summary: i.Description,
 
 		ContentHTML: i.Content,
+		Tags:        categoryNames(i.Category, i.Categories),
 	}
 
 	if home := homeLink(i.Link, i.Links); home != nil {

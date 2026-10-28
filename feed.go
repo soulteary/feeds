@@ -37,7 +37,9 @@ type Item struct {
 	Created     time.Time
 	Enclosure   *Enclosure
 	Content     string
-	Links       []*Link // Additional links; Link remains the primary link.
+	Links       []*Link  // Additional links; Link remains the primary link.
+	Category    string   // Primary category.
+	Categories  []string // Categories combined with Category in stable order.
 }
 
 type Feed struct {
@@ -52,7 +54,9 @@ type Feed struct {
 	Items       []*Item
 	Copyright   string
 	Image       *Image
-	Links       []*Link // Additional links, including explicit rel=self subscription URLs.
+	Links       []*Link  // Additional links, including explicit rel=self subscription URLs.
+	Category    string   // Primary category (RSS and Atom).
+	Categories  []string // Feed categories (RSS and Atom); not inherited by items.
 }
 
 // add a new Item to a Feed
