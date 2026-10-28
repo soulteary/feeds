@@ -38,6 +38,7 @@ type Item struct {
 	Enclosure   *Enclosure
 	Content     string
 	Links       []*Link  // Additional links; Link remains the primary link.
+	Language    string   // Item language override for Atom and JSON.
 	Category    string   // Primary category.
 	Categories  []string // Categories combined with Category in stable order.
 }
@@ -55,6 +56,7 @@ type Feed struct {
 	Copyright   string
 	Image       *Image
 	Links       []*Link  // Additional links, including explicit rel=self subscription URLs.
+	Language    string   // Primary language of the feed.
 	Category    string   // Primary category (RSS and Atom).
 	Categories  []string // Feed categories (RSS and Atom); not inherited by items.
 }

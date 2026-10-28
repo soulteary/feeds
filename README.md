@@ -138,6 +138,32 @@ for all formats, and formatting does not mutate source categories.
 The new fields are additive; positional struct literals for the affected public
 structs may need updates. Keyed literals using the existing fields remain valid.
 
+### Languages
+
+Set `Feed.Language` to the feed's primary language and `Item.Language` for an
+explicit item override, using language tags such as `en-US`, `zh-Hant-TW`, or
+`sr-Latn-RS`.
+
+- RSS maps `Feed.Language` to the existing channel `language` element. RSS 2.0
+  has no core item-level language element, so item overrides are not emitted
+  there; no nonstandard item `language` element is invented.
+- Atom maps feed and entry languages to `xml:lang` in the reserved XML namespace.
+  When an entry language is empty it is omitted, so XML language inheritance
+  supplies the feed context. The Go entry field remains empty, not a copied
+  feed value. A standalone entry has only its own explicitly set language.
+- JSON Feed maps the feed and item fields to their respective `language` keys;
+  an omitted item value leaves the feed's primary language as the default.
+
+The existing `RssFeed.Language` and `JSONFeed.Language` remain strings. New
+`AtomFeed.Language`, `AtomEntry.Language`, and `JSONItem.Language` fields support
+low-level encoding/decoding as well. Empty strings are omitted; the string API
+models unspecified/inherited languages, not an explicit empty `xml:lang` reset.
+Values are preserved exactly, without forced validation or normalization. Callers
+remain responsible for supplying valid language tags. Source objects are not
+mutated, and feeds without language values keep their previous output. No new
+dependency is required. As with other additive fields, positional struct literals
+for affected public types may need updates; keyed literals remain compatible.
+
 ### Complete example
 
 ```go

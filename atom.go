@@ -42,6 +42,7 @@ type AtomContributor struct {
 type AtomEntry struct {
 	XMLName     xml.Name       `xml:"entry"`
 	Xmlns       string         `xml:"xmlns,attr,omitempty"`
+	Language    string         `xml:"http://www.w3.org/XML/1998/namespace lang,attr,omitempty"`
 	Title       string         `xml:"title"`   // required
 	Updated     string         `xml:"updated"` // required
 	Id          string         `xml:"id"`      // required
@@ -70,6 +71,7 @@ type AtomLink struct {
 type AtomFeed struct {
 	XMLName     xml.Name       `xml:"feed"`
 	Xmlns       string         `xml:"xmlns,attr"`
+	Language    string         `xml:"http://www.w3.org/XML/1998/namespace lang,attr,omitempty"`
 	Title       string         `xml:"title"`   // required
 	Id          string         `xml:"id"`      // required
 	Updated     string         `xml:"updated"` // required
@@ -123,6 +125,7 @@ func newAtomEntry(i *Item) *AtomEntry {
 	}
 	x := &AtomEntry{
 		Title:     i.Title,
+		Language:  i.Language,
 		Links:     []AtomLink{{Href: link.Href, Rel: link_rel, Type: link.Type}},
 		Id:        id,
 		Updated:   anyTimeFormat(time.RFC3339, i.Updated, i.Created),
@@ -179,6 +182,7 @@ func (a *Atom) AtomFeed() *AtomFeed {
 	feed := &AtomFeed{
 		Xmlns:    ns,
 		Title:    a.Title,
+		Language: a.Language,
 		Link:     &AtomLink{Href: link.Href, Rel: link.Rel},
 		Subtitle: a.Description,
 		Id:       id,
