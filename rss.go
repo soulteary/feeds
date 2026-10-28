@@ -43,6 +43,7 @@ type RssTextInput struct {
 }
 
 type RssFeed struct {
+	Extensions     []Extension   `xml:"-"`
 	XMLName        xml.Name      `xml:"channel"`
 	Title          string        `xml:"title"` // required
 	AtomLinks      []RssAtomLink `xml:"http://www.w3.org/2005/Atom link,omitempty"`
@@ -69,10 +70,11 @@ type RssFeed struct {
 }
 
 type RssItem struct {
-	XMLName     xml.Name `xml:"item"`
-	Title       string   `xml:"title"`       // required
-	Link        string   `xml:"link"`        // required
-	Description string   `xml:"description"` // required
+	Extensions  []Extension `xml:"-"`
+	XMLName     xml.Name    `xml:"item"`
+	Title       string      `xml:"title"`       // required
+	Link        string      `xml:"link"`        // required
+	Description string      `xml:"description"` // required
 	Content     *RssContent
 	Author      string   `xml:"author,omitempty"`
 	Category    string   `xml:"-"`
@@ -128,6 +130,7 @@ func newRssItem(i *Item) *RssItem {
 		item.Enclosure = &RssEnclosure{Url: i.Enclosure.Url, Type: i.Enclosure.Type, Length: i.Enclosure.Length}
 	}
 
+	item.Extensions = i.Extensions
 	item.Category = i.Category
 	item.Categories = categoryNames(i.Category, i.Categories)
 	if len(item.Categories) > 0 {
@@ -163,6 +166,7 @@ func (r *Rss) RssFeed() *RssFeed {
 		Copyright:      r.Copyright,
 		Image:          image,
 	}
+	channel.Extensions = r.Extensions
 	channel.Category = r.Category
 	channel.Categories = categoryNames(r.Category, r.Categories)
 	if len(channel.Categories) > 0 {
@@ -233,6 +237,9 @@ type RssAtomLink struct {
 
 // MarshalXML combines the legacy Category with Categories without mutation.
 func (r RssFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if err := validateExtensions(r.Extensions, ""); err != nil {
+		return err
+	}
 	type plain RssFeed
 	value := plain(r)
 	value.Categories = categoryNames(r.Category, r.Categories)
@@ -240,7 +247,10 @@ func (r RssFeed) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if start.Name.Local == "" {
 		start.Name.Local = "channel"
 	}
-	return e.EncodeElement(value, start)
+	return e.EncodeElement(struct {
+		plain
+		XMLChildren []Extension `xml:",any"`
+	}{plain: value, XMLChildren: r.Extensions}, start)
 }
 
 // UnmarshalXML retains all categories and mirrors the first in Category.
@@ -248,8 +258,12 @@ func (r *RssFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain RssFeed
 	value := plain(*r)
 	value.Categories = nil
-	if err := d.DecodeElement(&value, &start); err != nil {
+	extensions, err := decodeExtensions(d, start, &value, "", true)
+	if err != nil {
 		return err
+	}
+	if extensions != nil {
+		value.Extensions = extensions
 	}
 	if len(value.Categories) > 0 {
 		value.Category = value.Categories[0]
@@ -262,6 +276,9 @@ func (r *RssFeed) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // MarshalXML combines the legacy Category with Categories without mutation.
 func (r RssItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if err := validateExtensions(r.Extensions, ""); err != nil {
+		return err
+	}
 	type plain RssItem
 	value := plain(r)
 	value.Categories = categoryNames(r.Category, r.Categories)
@@ -269,7 +286,10 @@ func (r RssItem) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if start.Name.Local == "" {
 		start.Name.Local = "item"
 	}
-	return e.EncodeElement(value, start)
+	return e.EncodeElement(struct {
+		plain
+		XMLChildren []Extension `xml:",any"`
+	}{plain: value, XMLChildren: r.Extensions}, start)
 }
 
 // UnmarshalXML retains all categories and mirrors the first in Category.
@@ -277,8 +297,12 @@ func (r *RssItem) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type plain RssItem
 	value := plain(*r)
 	value.Categories = nil
-	if err := d.DecodeElement(&value, &start); err != nil {
+	extensions, err := decodeExtensions(d, start, &value, "", true)
+	if err != nil {
 		return err
+	}
+	if extensions != nil {
+		value.Extensions = extensions
 	}
 	if len(value.Categories) > 0 {
 		value.Category = value.Categories[0]

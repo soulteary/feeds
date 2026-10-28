@@ -164,6 +164,55 @@ mutated, and feeds without language values keep their previous output. No new
 dependency is required. As with other additive fields, positional struct literals
 for affected public types may need updates; keyed literals remain compatible.
 
+### Custom XML extensions
+
+`Feed.Extensions` and `Item.Extensions` append foreign XML child elements to both
+RSS and Atom output. The low-level `RssFeed`, `RssItem`, `AtomFeed`, and `AtomEntry`
+models expose the same field for format-specific extensions. XML extensions are
+not mapped into JSON Feed.
+
+```go
+feed.Extensions = []feeds.Extension{{
+    XMLName: xml.Name{Space: "https://example.com/feed-extension", Local: "rating"},
+    Attrs: []xml.Attr{{Name: xml.Name{Local: "scale"}, Value: "5"}},
+    Content: []feeds.ExtensionContent{{Text: "4 & rising"}},
+}}
+```
+
+Import `encoding/xml` for `xml.Name` and `xml.Attr`. `Space` is the namespace URI;
+`Local` is an unprefixed local name. Top-level extensions require a foreign,
+nonempty namespace; native fields cannot be replaced through extensions. Use
+`RssFeed.AtomLinks` or the generic link model for RSS Atom links already modeled
+by the library. Attributes follow the same expanded-name convention; namespace
+declarations and duplicate attribute names are rejected. The encoder supplies
+namespace declarations and escapes ordinary text/attribute values.
+
+Each ordered `ExtensionContent` item contains text, a child `*Extension`, or a
+comment. Nested children may use other namespaces or the empty namespace; an
+explicit default-namespace reset preserves unqualified children. Whitespace and
+mixed text/child order are retained even when the surrounding feed is indented.
+Only encoder-generated XML is used internally; content text is never raw XML.
+
+Decoding captures foreign direct children before they can be confused with
+native fields sharing local names. Native descendants continue through their
+existing streaming decoders. Explicit foreign collections replace old ones on a
+reused object; absent collections preserve existing values. The consume fixtures
+now retain their Dublin Core creators instead of discarding them; the Atom
+fixture also declares its previously undeclared `dc` prefix.
+
+Roundtrips preserve expanded element/attribute names and ordered content, not
+byte spelling, prefix selection, namespace-declaration placement, or CDATA
+boundaries. Namespace declarations are not retained, and QName-valued strings
+(such as `xsi:type="prefix:Name"`) are not resolved or rewritten; payloads relying
+on those lexical prefix bindings need a schema-aware implementation outside this
+API. Processing instructions/directives inside an extension return an error.
+The payload tree must be acyclic. Feed/entry wrapper attributes and extensions
+on the outer RSS document are outside this child-element API.
+
+No existing field is removed or changes type, no dependency is added, and
+extension-free output stays unchanged. Additive fields may require updates to
+positional struct literals; keyed literals remain compatible.
+
 ### Complete example
 
 ```go

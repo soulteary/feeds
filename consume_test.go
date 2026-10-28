@@ -35,6 +35,7 @@ var testRssFeedXML = RssFeedXml{
 		TextInput:      (*RssTextInput)(nil),
 		Items: []*RssItem{
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:22:00+00:00",
 				Link:        "http://example.com/test/1540941720",
@@ -49,6 +50,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:21:00+00:00",
 				Link:        "http://example.com/test/1540941660",
@@ -63,6 +65,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:20:00+00:00",
 				Link:        "http://example.com/test/1540941600",
@@ -77,6 +80,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:19:00+00:00",
 				Link:        "http://example.com/test/1540941540",
@@ -91,6 +95,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:18:00+00:00",
 				Link:        "http://example.com/test/1540941480",
@@ -105,6 +110,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:17:00+00:00",
 				Link:        "http://example.com/test/1540941420",
@@ -119,6 +125,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:16:00+00:00",
 				Link:        "http://example.com/test/1540941360",
@@ -133,6 +140,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:15:00+00:00",
 				Link:        "http://example.com/test/1540941300",
@@ -147,6 +155,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:14:00+00:00",
 				Link:        "http://example.com/test/1540941240",
@@ -161,6 +170,7 @@ var testRssFeedXML = RssFeedXml{
 				Source:      "",
 			},
 			{
+				Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 				XMLName:     xml.Name{Space: "", Local: "item"},
 				Title:       "Lorem ipsum 2018-10-30T23:13:00+00:00",
 				Link:        "http://example.com/test/1540941180",
@@ -203,6 +213,7 @@ var testAtomFeedXML = AtomFeed{
 	Contributor: (*AtomContributor)(nil),
 	Entries: []*AtomEntry{
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:22:00+00:00",
@@ -219,6 +230,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:21:00+00:00",
@@ -235,6 +247,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:20:00+00:00",
@@ -251,6 +264,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:19:00+00:00",
@@ -267,6 +281,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:18:00+00:00",
@@ -283,6 +298,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:17:00+00:00",
@@ -299,6 +315,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:16:00+00:00",
@@ -315,6 +332,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:15:00+00:00",
@@ -331,6 +349,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:14:00+00:00",
@@ -347,6 +366,7 @@ var testAtomFeedXML = AtomFeed{
 			Author:      (*AtomAuthor)(nil),
 		},
 		{
+			Extensions:  []Extension{{XMLName: xml.Name{Space: "http://purl.org/dc/elements/1.1/", Local: "creator"}, Content: []ExtensionContent{{Text: "John Smith"}}}},
 			XMLName:     xml.Name{Space: "", Local: "entry"},
 			Xmlns:       "",
 			Title:       "Lorem ipsum 2018-10-30T23:13:00+00:00",
