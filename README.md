@@ -40,6 +40,12 @@ Item authors do not inherit the channel author. Name-only authors remain
 available in Atom and JSON, and callers using `RssFeed` / `RssItem` directly
 retain control over their raw contact strings.
 
+Atom conversion uses an explicit `Feed.Id` as the feed identifier, falling back
+to `Feed.Link.Href` only when `Id` is empty. Entry `published` is populated from
+`Item.Created` and omitted when the creation time is unknown. Entry `updated`
+continues to prefer `Item.Updated`, falling back to `Item.Created`. Item IDs,
+feed links, and RSS/JSON conversion are unaffected by these Atom mappings.
+
 ```go
 package main
 

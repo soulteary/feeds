@@ -116,10 +116,11 @@ func newAtomEntry(i *Item) *AtomEntry {
 		link_rel = "alternate"
 	}
 	x := &AtomEntry{
-		Title:   i.Title,
-		Links:   []AtomLink{{Href: link.Href, Rel: link_rel, Type: link.Type}},
-		Id:      id,
-		Updated: anyTimeFormat(time.RFC3339, i.Updated, i.Created),
+		Title:     i.Title,
+		Links:     []AtomLink{{Href: link.Href, Rel: link_rel, Type: link.Type}},
+		Id:        id,
+		Updated:   anyTimeFormat(time.RFC3339, i.Updated, i.Created),
+		Published: anyTimeFormat(time.RFC3339, i.Created),
 	}
 
 	// if there's a description, assume it's html
@@ -149,12 +150,16 @@ func (a *Atom) AtomFeed() *AtomFeed {
 	if link == nil {
 		link = &Link{}
 	}
+	id := a.Id
+	if id == "" {
+		id = link.Href
+	}
 	feed := &AtomFeed{
 		Xmlns:    ns,
 		Title:    a.Title,
 		Link:     &AtomLink{Href: link.Href, Rel: link.Rel},
 		Subtitle: a.Description,
-		Id:       link.Href,
+		Id:       id,
 		Updated:  updated,
 		Rights:   a.Copyright,
 	}
