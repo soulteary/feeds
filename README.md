@@ -21,6 +21,16 @@ applications.
 
 ### Usage
 
+JSON Feed output uses the standard `banner_image` and `size_in_bytes` keys.
+Decoding also accepts the legacy `banner_` and `size` keys; when both names are
+present, the standard key takes precedence, including empty, zero, or null values.
+As with other scalar fields decoded by `encoding/json`, null leaves an existing
+banner image or attachment size unchanged. Attachment durations are encoded in
+seconds for both values and pointers. When decoding into a reused attachment,
+an explicit zero duration clears the previous value; missing, null, and negative
+durations preserve it. Empty feeds always serialize the required `items: []`
+array without changing the source feed.
+
 ```go
 package main
 
