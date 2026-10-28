@@ -63,7 +63,7 @@ func TestRSSContentAndSourceRoundtrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Count(output, "<content:encoded>") != 1 || strings.Contains(output, "stale") {
+	if strings.Count(output, "<content:encoded") != 1 || strings.Contains(output, "stale") {
 		t.Fatalf("content emitted twice: %s", output)
 	}
 	var again RssFeedXml

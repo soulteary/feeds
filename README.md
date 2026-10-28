@@ -542,3 +542,68 @@ Outputs:
   ]
 }
 ```
+
+### Converting decoded RSS and Atom to the shared model
+
+Use `xml.Unmarshal` with `AtomFeed` or `RssFeedXml`, then call `ToFeed()`:
+
+```go
+var document feeds.RssFeedXml
+if err := xml.Unmarshal(data, &document); err != nil {
+    return err
+}
+feed, err := document.ToFeed()
+if err != nil {
+    return err
+}
+// The shared feed can now be edited or serialized with ToAtom/ToRss/ToJSON.
+_ = feed
+```
+
+`(*AtomFeed).ToFeed`, `(*RssFeed).ToFeed` and `(*RssFeedXml).ToFeed`
+return `(*Feed, error)`. `(*AtomEntry).ToItem` and `(*RssItem).ToItem`
+return `(*Item, error)`. These are additive methods; existing fields and APIs
+are unchanged. Nil receivers/missing RSS channels return errors, and nil entries
+are skipped. Results own their mutable metadata, links and extension trees;
+converting or editing a result does not mutate the input.
+
+Shared titles, IDs, dates, authors, links, categories, images, language,
+XML bases, content and foreign extensions are mapped where the source format
+provides them. Atom page links become the primary Link; self, hub and enclosure
+relations stay in Links. The first enclosure also populates Enclosure. Feed
+logo is preferred over icon. Missing Atom entry authors inherit a copied feed
+author. RSS managingEditor/author mailboxes are parsed using net/mail; legacy
+non-mailbox strings remain Name. RSS SourceInfo.URL wins over legacy Source,
+including an explicitly empty URL. RSS pubDate maps to Created, lastBuildDate
+to Updated; missing dates remain zero. Atom updated and published remain distinct.
+
+Invalid dates return errors identifying their field and entry index. Atom accepts
+RFC3339 timestamps including fractions. RSS accepts the RFC1123/RFC822 layouts
+with numeric offsets or recognized UT/UTC/GMT and North American zone names;
+unknown named zones are rejected rather than silently treated as UTC. Atom text
+and text/plain content/summary are HTML-escaped for the shared HTML fields;
+html and text/html remain unchanged. Other content types (including XHTML and
+binary types) return errors because the current low-level/shared models cannot
+represent them faithfully. An explicit empty entry language reset under a
+nonempty feed language also returns an error rather than becoming inheritance.
+
+Complete RSS conversion combines root and channel xml:base, leaving resource
+references untouched. Two relative declarations requiring the original document
+URL cannot safely be flattened and return an error; callers can first supply an
+absolute document base. Channel-only ToFeed retains its own base without assuming
+an outer context. RSS podcast metadata is retained as copied XML extensions,
+using the existing typed-over-raw merge rules.
+
+This is conversion of the fields modeled by this library, not a lossless XML
+editor. Format-only metadata without a shared destination (such as Atom category
+scheme/label, author URI, contributor, separate icon when logo is present, entry
+rights/source, and RSS source display name, generator, comments, TTL and textInput)
+is not retained in Feed. Category terms remain, with stable deduplication. The
+existing low-level models also do not capture every XML construct or attribute;
+keep those models/original XML when exact preservation is required. Existing
+serializers retain their documented timestamp precision and per-format limits.
+
+RSS content:encoded now declares its own content-module namespace. This preserves
+its meaning even when input documents bind the content prefix to another URI,
+or when content is marshaled without an RSS root. The extra local declaration
+changes XML spelling but not the normal element's expanded name or content.
