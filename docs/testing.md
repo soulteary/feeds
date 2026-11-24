@@ -1,7 +1,7 @@
 # Tests and CI
 
 The module retains `go 1.20` and has no third-party module dependencies. The
-reporting toolchain is separately pinned in `.github/go-version` (Go 1.27.3).
+reporting toolchain is separately pinned in `.github/go-version` (Go 1.27.4).
 
 ## Local checks
 
@@ -87,7 +87,7 @@ its separate fix PR before the source change becomes part of main.
   [cascadia](https://github.com/soulteary/cascadia/blob/main/.github/workflows/quality.yml),
   pinned to their resolved commits. The grade report is diagnostic; only the test
   action has a numeric gate. An A+ report can still list complexity findings.
-- `test.yml`: compatibility tests and vet, Go 1.20.x on Ubuntu 22.04 and Go 1.27.3
+- `test.yml`: compatibility tests and vet, Go 1.20.x on Ubuntu 22.04 and Go 1.27.4
   on current Linux/macOS/Windows runners. The old toolchain runs on an older
   supported runner rather than assuming compatibility with every newer host OS.
 - `security.yml`: pinned GoSec and govulncheck actions, using the reporting Go
