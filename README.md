@@ -5,7 +5,7 @@ Starting with v1.3.0, this fork publishes the Go module `github.com/soulteary/fe
 Go 1.20 remains the minimum supported version.
 
 ```sh
-go get github.com/soulteary/feeds@v1.3.0
+go get github.com/soulteary/feeds@v1.3.1
 ```
 
 To adopt this fork, change imports from `github.com/gorilla/feeds` to
